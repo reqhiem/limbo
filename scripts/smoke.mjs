@@ -91,6 +91,14 @@ check("detail: query keeps duplicate x", JSON.stringify(d1?.query) === JSON.stri
 check("detail: headers captured", d1?.headers?.some(([k, v]) => k === "x-smoke" && v === "1") && d1.headers.some(([k]) => k === "content-type"), d1?.headers);
 check("detail: body utf8, not truncated", d1?.body === '{"a":1}' && d1?.bodyEncoding === "utf8" && d1?.truncated === false, d1);
 check("detail: raw search kept", d1?.search === "?x=1&x=2", d1?.search);
+check("summary: responseStatus 200, no label for a JSON body without type", s1?.responseStatus === 200 && s1?.label === null && s1?.search === "?x=1&x=2", s1);
+await hook(slug, "/stripe", { method: "POST", headers: { "content-type": "application/json" }, body: '{"id":"evt_1","type":"payment_intent.succeeded"}' });
+check("label from JSON type", (await latest(slug))?.label === "payment_intent.succeeded", (await latest(slug))?.label);
+await hook(slug, "/gh", { method: "POST", headers: { "content-type": "application/json", "x-github-event": "pull_request" }, body: '{"action":"opened","number":1}' });
+check("label from x-github-event + action", (await latest(slug))?.label === "pull_request.opened", (await latest(slug))?.label);
+for (const r of (await api("GET", `/endpoints/${slug}/requests`)).json.filter((r) => r.path === "/stripe" || r.path === "/gh")) {
+  await api("DELETE", `/endpoints/${slug}/requests/${r.id}`);
+}
 await hook(slug, "/raw?verbose&e=%7E%20", { method: "GET" });
 const dRaw = await detail(slug, (await latest(slug))?.id);
 check("detail: raw search keeps flags and encoding", dRaw?.search === "?verbose&e=%7E%20" && JSON.stringify(dRaw?.query) === JSON.stringify([["verbose", ""], ["e", "~ "]]), { search: dRaw?.search, query: dRaw?.query });
@@ -136,6 +144,7 @@ const patched = await api("PATCH", `/endpoints/${slug}`, {
 check("PATCH response config -> 200", patched.status === 200 && patched.json?.response?.status === 201 && patched.json?.name === "renamed", patched);
 const res2 = await hook(slug, "", { method: "PUT", body: "x" });
 check("ingress honors configured status/body", res2.status === 201 && (await res2.text()) === "created!");
+check("summary records the status that was sent (201)", (await latest(slug))?.responseStatus === 201, (await latest(slug))?.responseStatus);
 check("ingress honors content type + extra headers", res2.headers.get("content-type") === "text/plain; charset=utf-8" && res2.headers.get("x-custom") === "yes, again", Object.fromEntries(res2.headers));
 const patchName = await api("PATCH", `/endpoints/${slug}`, { name: null });
 check("PATCH name only keeps response", patchName.json?.name === null && patchName.json?.response?.status === 201, patchName.json);

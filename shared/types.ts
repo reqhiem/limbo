@@ -72,6 +72,15 @@ export interface RequestSummary {
   method: string;
   /** Sub-path after /h/:slug, e.g. "/a/b". Empty string when there is none. */
   path: string;
+  /** Raw query string as received, including the leading "?" ("" when there is none). */
+  search: string;
+  /**
+   * What the sender says this is: a well-known event header (x-github-event, …, plus the body's
+   * `action`) or a top-level string `type`/`event`/… of a JSON body up to 64 KiB. Null when unknown.
+   */
+  label: string | null;
+  /** Status Limbo answered this request with. */
+  responseStatus: number;
   contentType: string | null;
   /** Original body size in bytes (before any truncation). */
   size: number;
@@ -81,8 +90,6 @@ export interface RequestSummary {
 }
 
 export interface CapturedRequest extends RequestSummary {
-  /** Raw query string as received, including the leading "?" ("" when there is none). */
-  search: string;
   query: KV[];
   /** As exposed by the Workers runtime: lowercase names, duplicate headers comma-joined (except set-cookie). */
   headers: KV[];

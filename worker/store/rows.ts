@@ -13,7 +13,7 @@ export type EndpointRow = {
   last_request_at: number | null;
 };
 
-export const SUMMARY_COLUMNS = "slug, id, received_at, method, path, content_type, size, ip, digest";
+export const SUMMARY_COLUMNS = "slug, id, received_at, size, response_status, method, digest, ip, content_type, label, path, search";
 
 export type SummaryRow = {
   slug: string;
@@ -25,10 +25,12 @@ export type SummaryRow = {
   size: number;
   ip: string | null;
   digest: string;
+  response_status: number;
+  label: string | null;
+  search: string;
 };
 
 export type RequestRow = SummaryRow & {
-  search: string;
   body_encoding: string;
   truncated: number;
   query: string;
@@ -64,6 +66,9 @@ export function toSummary(r: SummaryRow): RequestSummary {
     size: r.size,
     ip: r.ip,
     digest: r.digest,
+    search: r.search,
+    label: r.label,
+    responseStatus: r.response_status,
   };
 }
 
@@ -72,7 +77,6 @@ export function toCaptured(r: RequestRow): CapturedRequest {
   const bytes = new Uint8Array(r.body);
   return {
     ...toSummary(r),
-    search: r.search,
     query: JSON.parse(r.query),
     headers: JSON.parse(r.headers),
     body: bodyEncoding === "utf8" ? utf8Decoder.decode(bytes) : bytes.toBase64(),
