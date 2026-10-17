@@ -1,9 +1,14 @@
-// End-to-end check against a running dev server (DEV_SKIP_ACCESS=true, localhost).
-// Usage: node scripts/smoke.mjs [baseUrl]   (default http://localhost:5173)
+// End-to-end check against a running instance.
+// Usage: node scripts/smoke.mjs [baseUrl]   (default http://localhost:5173, with DEV_SKIP_ACCESS=true)
+// Against a deployment behind Cloudflare Access, export an Access service token with a
+// Service Auth policy on the app: CF_ACCESS_CLIENT_ID=... CF_ACCESS_CLIENT_SECRET=...
 import { createHash, randomBytes } from "node:crypto";
 
 const base = (process.argv[2] ?? "http://localhost:5173").replace(/\/+$/, "");
 let failures = 0;
+const auth = process.env.CF_ACCESS_CLIENT_ID
+  ? { "cf-access-client-id": process.env.CF_ACCESS_CLIENT_ID, "cf-access-client-secret": process.env.CF_ACCESS_CLIENT_SECRET ?? "" }
+  : {};
 
 function check(name, ok, detail) {
   console.log(`${ok ? "PASS" : "FAIL"} ${name}${!ok && detail !== undefined ? ` -- ${JSON.stringify(detail)}` : ""}`);
@@ -12,7 +17,7 @@ function check(name, ok, detail) {
 }
 
 async function api(method, path, body) {
-  const init = { method, headers: {} };
+  const init = { method, headers: { ...auth } };
   if (body !== undefined) {
     init.headers["content-type"] = "application/json";
     init.body = typeof body === "string" ? body : JSON.stringify(body);
@@ -156,9 +161,9 @@ check("PATCH bad header name -> 400", (await badResp({ headers: [["Bad Name", "a
 check("PATCH Set-Cookie -> 400", (await badResp({ headers: [["Set-Cookie", "a=b"]] })).status === 400);
 check("PATCH Clear-Site-Data -> 400", (await badResp({ headers: [["Clear-Site-Data", '"cookies"']] })).status === 400);
 check("PATCH Content-Type as extra header -> 400", (await badResp({ headers: [["Content-Type", "text/html"]] })).status === 400);
-const textPlain = await fetch(`${base}/api/endpoints`, { method: "POST", headers: { "content-type": "text/plain" }, body: "{}" });
+const textPlain = await fetch(`${base}/api/endpoints`, { method: "POST", headers: { ...auth, "content-type": "text/plain" }, body: "{}" });
 check("API JSON body with text/plain -> 415", textPlain.status === 415, textPlain.status);
-const crossSite = await fetch(`${base}/api/endpoints`, { headers: { origin: "https://evil.example" } });
+const crossSite = await fetch(`${base}/api/endpoints`, { headers: { ...auth, origin: "https://evil.example" } });
 check("API cross-origin request -> 403", crossSite.status === 403, crossSite.status);
 check("PATCH unknown endpoint -> 404", (await api("PATCH", "/endpoints/no-such-endpoint", {})).status === 404);
 
@@ -220,7 +225,8 @@ check("chunked 1.5 MB upload: original size kept", sChunked?.path === "/chunked"
 // --- WebSocket ---------------------------------------------------------------
 const nonUpgrade = await api("GET", "/ws");
 check("GET /api/ws without upgrade -> 426", nonUpgrade.status === 426, nonUpgrade);
-const ws = new WebSocket(`${base.replace(/^http/, "ws")}/api/ws`);
+// Node's (undici) WebSocket accepts extra handshake headers.
+const ws = new WebSocket(`${base.replace(/^http/, "ws")}/api/ws`, { headers: auth });
 const messages = [];
 const arrivals = new Map();
 ws.addEventListener("message", (e) => {

@@ -45,9 +45,10 @@ npm run dev                      # Vite + Worker + Durable Object on http://loca
 Running the built app with plain Wrangler:
 
 ```sh
-npm run build        # type-check + vite build (writes the deploy config under dist/)
-npx wrangler dev     # serves the built Worker + assets, picks up the generated config
+npm run dev:wrangler   # = npm run build && wrangler dev --local-upstream localhost  (http://localhost:8787)
 ```
+
+`vite build` writes `.wrangler/deploy/config.json`, which points `wrangler dev`/`wrangler deploy` at the generated config in `dist/`. `--local-upstream localhost` keeps the request host as `localhost`; without it Wrangler presents requests as `limbo.reqhiem.dev` (the route), and the API correctly refuses the dev bypass.
 
 Send it something:
 
@@ -58,7 +59,7 @@ curl -X POST 'http://localhost:5173/h/<slug>/a/b?x=1' -d '{"a":1}'
 End-to-end check (dev server running):
 
 ```sh
-node scripts/smoke.mjs                   # defaults to http://localhost:5173
+npm run smoke                            # node scripts/smoke.mjs [baseUrl], defaults to http://localhost:5173
 ```
 
 ### Verifying retention and caps locally
