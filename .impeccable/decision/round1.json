@@ -1,0 +1,127 @@
+{
+  "title": "Choose Limbo's visual world",
+  "question": "The roll assigned \"The Waiting Room\". Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "The Waiting Room",
+      "kicker": "THE ROLL",
+      "lineage": "the literal limbo: an ash-grey antechamber between worlds",
+      "thesis": "Every request waits in limbo until you look at it: unseen ones glow, opened ones settle.",
+      "palette": ["#1d1c1b", "#2b2a28", "#e9e4da", "#e2683c"],
+      "materials": ["ash haze", "bone paper", "votive ember"],
+      "viewport": "Ash room; endpoints as doors in the left rail; requests condense out of haze into the list with an ember mark until opened; the open request sits in a bone-lit plate.",
+      "risk": "The metaphor turns to costume fast; haze must never blur data.",
+      "raised": [
+        { "from": "challenger-star-atlas", "raise": "Payload size rides a fixed magnitude ramp: a dot whose diameter is the size class, scannable down the list." },
+        { "from": "challenger-character-goods", "raise": "Each endpoint keeps fixed furniture: name plate, born date, and its one-line answer (status · type)." },
+        { "from": "challenger-crouwel-grid", "raise": "The layout grid stays visible as hairline structure across list and detail." }
+      ]
+    },
+    {
+      "id": "model-pick",
+      "label": "Flight Progress Strips",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "air-traffic control strip bays",
+      "thesis": "Each request is a strip slotted into its endpoint's bay; you work the traffic like a controller.",
+      "palette": ["#10161b", "#e8dcb9", "#9cc3e6", "#e8a7b8", "#f2b33d"],
+      "materials": ["cardstock strips", "plastic holders", "console glass"],
+      "viewport": "Dark console; a bay of strips newest on top with ruled boxes METHOD | PATH | TIME | SIZE | ORIGIN; the pulled strip opens right as the working strip.",
+      "risk": "Topped my own list; strip skeuomorphism reads as costume unless every box is functional."
+    },
+    {
+      "id": "challenger-ikeda-datamatics",
+      "label": "Datamatics Field",
+      "verdict": "wins",
+      "lineage": "Ryoji Ikeda's data-sublime installations",
+      "thesis": "The request as pure signal: bytes, bars and numbers in black and white, inverting for one frame when something lands.",
+      "palette": ["#000000", "#ffffff"],
+      "materials": ["hairline bars", "tabular monospace", "frame inversion"],
+      "viewport": "Black field; a dense monospace request column, each row carrying a barcode drawn from its own bytes; the selected request inverts to white; hex and headers in tabular columns.",
+      "case": "Fuses cleanly: payloads are data, the byte-barcode is a true fingerprint, inversion makes arrival unmissable. Beats the roll on audience and clarity.",
+      "risk": "No color left for method or status; strobing must stop under reduced motion.",
+      "hero": "https://impeccable.style/worlds/cards/ikeda-datamatics-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/ikeda-datamatics.webp"
+    },
+    {
+      "id": "challenger-ticket-wallet",
+      "label": "Jet-Age Ticket Wallet",
+      "verdict": "competitive",
+      "lineage": "1960s airline ticket wallets and coupons",
+      "thesis": "Every capture is a coupon; states stamp themselves: TRUNCATED, BINARY, VOID.",
+      "palette": ["#1b2a52", "#f7f5ef", "#c8102e", "#5b3f8c"],
+      "materials": ["carbon-copy coupons", "rubber stamps"],
+      "viewport": "Navy wallet; endpoints as tabbed coupon books; the open request as a ruled coupon with carbon-struck fields.",
+      "case": "Stamps map cleanly onto truncation, binary and deleted states; loses on audience identification.",
+      "risk": "Paper nostalgia on a dense dev tool can read theme-park.",
+      "hero": "https://impeccable.style/worlds/cards/vernacular-ephemera-jet-age-ticket-wallet-hero.webp"
+    },
+    {
+      "id": "challenger-lexicon",
+      "label": "Lexicon & Plates",
+      "verdict": "competitive",
+      "lineage": "nineteenth-century lexicon with chromolithograph plates",
+      "thesis": "Requests set like dictionary entries; untrusted payloads quarantined in bordered plates; guide words name the span in view.",
+      "palette": ["#14130f", "#ece4d2", "#d8452b", "#2f5aa8"],
+      "materials": ["engraving black", "bordered plates"],
+      "viewport": "Two guide timestamps head the request column (first and last in view); the payload sits in a bordered plate like a lithograph.",
+      "case": "Quarantine plates make 'untrusted stays inert' visible; loses on audience identification.",
+      "risk": "A bookish world fights a dark, dense developer tool.",
+      "hero": "https://impeccable.style/worlds/cards/rw-lexicon-shoulder-and-plate-hero.webp"
+    },
+    {
+      "id": "challenger-star-atlas",
+      "label": "Star Atlas",
+      "verdict": "declined",
+      "lineage": "celestial charts",
+      "thesis": "Arrivals plotted as stars, payload size as magnitude.",
+      "palette": ["#0f1a33", "#f2f2ee", "#d2402f"],
+      "materials": ["chart ink", "night-vision red"],
+      "viewport": "A coordinate field of arrivals.",
+      "case": "Fuses poorly: a sky chart hides the list the task needs.",
+      "risk": "Pretty, not operable.",
+      "kept": "A fixed magnitude ramp for payload size.",
+      "hero": "https://impeccable.style/worlds/cards/notation-diagram-systems-star-atlas-hero.webp"
+    },
+    {
+      "id": "challenger-character-goods",
+      "label": "Character Goods Catalog",
+      "verdict": "declined",
+      "lineage": "mascot merchandise catalogs",
+      "thesis": "Endpoints as a ranked cast of characters.",
+      "palette": ["#f6d9e4", "#fff4c7", "#c9e7f2"],
+      "materials": ["pastel cells", "name plates"],
+      "viewport": "A roster grid of endpoints.",
+      "case": "Fuses poorly on both axes for a debugging tool.",
+      "risk": "Cute where focus is needed.",
+      "kept": "Fixed furniture per endpoint: name plate, born date, one-line answer.",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-character-goods-catalog-hero.webp"
+    },
+    {
+      "id": "challenger-crouwel-grid",
+      "label": "Crouwel Grid Specimen",
+      "verdict": "declined",
+      "lineage": "Wim Crouwel's gridded posters",
+      "thesis": "The slug built cell by cell on a visible grid.",
+      "palette": ["#ffffff", "#1d4ed8", "#111111"],
+      "materials": ["graph-paper grid", "constructed letterforms"],
+      "viewport": "Monumental grid lettering over a small grotesk.",
+      "case": "Loses both axes: display type has no job in an inspector.",
+      "risk": "Poster, not tool.",
+      "kept": "The grid as visible armature.",
+      "hero": "https://impeccable.style/worlds/cards/crouwel-grid-specimen-hero.webp"
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code", "toggle": false },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "A neutral dark three-pane inspector in the DevTools tradition, executed impeccably.",
+    "palette": ["#0f1115", "#e6e8eb", "#3b82f6"],
+    "materials": ["neutral panes", "monospace data"],
+    "viewport": "Endpoint sidebar, request list, tabbed detail; one blue accent for selection.",
+    "risk": "Indistinguishable from webhook.site by design."
+  },
+  "steer": true
+}

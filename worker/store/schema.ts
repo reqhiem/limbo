@@ -25,6 +25,7 @@ export function migrate(sql: SqlStorage): void {
       ip TEXT,
       content_type TEXT,
       path TEXT NOT NULL,
+      search TEXT NOT NULL,
       body_encoding TEXT NOT NULL,
       truncated INTEGER NOT NULL,
       query TEXT NOT NULL,

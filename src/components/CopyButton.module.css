@@ -1,0 +1,12 @@
+.stack {
+  display: inline-grid;
+}
+
+.stack > span {
+  grid-area: 1 / 1;
+  text-align: center;
+}
+
+.stack > span[aria-hidden="true"] {
+  visibility: hidden;
+}

@@ -1,0 +1,36 @@
+.table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.table tr {
+  border-bottom: var(--rule-fine);
+}
+
+.table th,
+.table td {
+  padding: 6px var(--space-3) 6px 0;
+  vertical-align: top;
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.table th {
+  width: 15rem;
+  font-weight: 700;
+}
+
+.table td {
+  padding-right: 0;
+}
+
+.labelKeys th {
+  width: 11rem;
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--label);
+  line-height: calc(var(--text-data) * 1.5);
+}

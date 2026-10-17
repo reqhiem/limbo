@@ -1,0 +1,52 @@
+:root {
+  color-scheme: dark;
+
+  --ground: #000;
+  --ink: #fff;
+  /* The only secondary tier: labels and syntax, never captured data. */
+  --label: rgb(255 255 255 / 0.62);
+
+  --rule: 1px solid var(--ink);
+  /* Inner dividers: still pure ink, half the coverage. */
+  --rule-fine: 1px dotted var(--ink);
+
+  --font: "Martian Mono Variable", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --stretch-data: 87.5%;
+  --stretch-display: 75%;
+
+  --text-label: 0.6875rem; /* 11px */
+  --text-data: 0.8125rem; /* 13px */
+  --text-title: 1rem; /* 16px */
+  --text-display: 1.75rem; /* 28px */
+  --track-label: 0.12em;
+  --track-wide: 0.32em;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --header-h: 56px;
+  --col-endpoints: 248px;
+  --col-requests: 460px;
+  --control-h: 32px;
+  --row-h: 52px;
+
+  --flash: 120ms;
+}
+
+@media (max-width: 1280px) {
+  :root {
+    --col-endpoints: 216px;
+    --col-requests: 380px;
+  }
+}
+
+@media (max-width: 1100px) {
+  :root {
+    --col-endpoints: 200px;
+    --col-requests: 340px;
+  }
+}

@@ -1,0 +1,119 @@
+.column {
+  grid-area: requests;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border-right: var(--rule);
+}
+
+.head {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--rule);
+  flex: none;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.count {
+  margin-right: auto;
+  white-space: nowrap;
+}
+
+.title {
+  font-size: var(--text-title);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.urlRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.url {
+  flex: 1;
+  min-width: 0;
+  min-height: 24px;
+  padding: 2px var(--space-2);
+  border: var(--rule-fine);
+  font: inherit;
+  font-size: var(--text-label);
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+  height: 40px;
+  border-bottom: var(--rule);
+  flex: none;
+}
+
+.filter svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.filter input {
+  height: 100%;
+  border: 0;
+  padding: 0;
+}
+
+.filter input:focus-visible {
+  outline: 0;
+}
+
+.filter:focus-within {
+  outline: 2px solid var(--ink);
+  outline-offset: -3px;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.list {
+  list-style: none;
+}
+
+.list > li {
+  border-bottom: var(--rule-fine);
+}
+
+@media (max-width: 1100px) {
+  .head,
+  .filter {
+    padding-inline: var(--space-3);
+  }
+
+  /* Icon-only Settings; the text stays for assistive tech. */
+  .settingsText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

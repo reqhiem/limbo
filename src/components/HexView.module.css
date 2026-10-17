@@ -1,0 +1,20 @@
+.hex {
+  font-size: var(--text-label);
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.line {
+  display: flex;
+  gap: 2ch;
+}
+
+.offset {
+  color: var(--label);
+}
+
+.ascii {
+  padding-left: 2ch;
+  border-left: var(--rule-fine);
+}

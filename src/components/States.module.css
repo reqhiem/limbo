@@ -1,0 +1,54 @@
+.error {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.code {
+  font-weight: 800;
+  letter-spacing: var(--track-label);
+  line-height: 24px;
+}
+
+.message {
+  line-height: 24px;
+  overflow-wrap: anywhere;
+}
+
+.skeleton {
+  display: grid;
+}
+
+.skeletonRow {
+  display: grid;
+  align-content: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+  border-bottom: var(--rule-fine);
+}
+
+.skeletonRow > span {
+  display: block;
+  height: 1px;
+  background: var(--ink);
+}
+
+.empty {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-4);
+}
+
+.emptyTitle {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-label);
+}
+
+.emptyBody {
+  color: var(--label);
+  max-width: 48ch;
+  text-wrap: pretty;
+}

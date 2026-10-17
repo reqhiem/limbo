@@ -81,6 +81,8 @@ export interface RequestSummary {
 }
 
 export interface CapturedRequest extends RequestSummary {
+  /** Raw query string as received, including the leading "?" ("" when there is none). */
+  search: string;
   query: KV[];
   /** As exposed by the Workers runtime: lowercase names, duplicate headers comma-joined (except set-cookie). */
   headers: KV[];

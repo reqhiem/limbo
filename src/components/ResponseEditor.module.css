@@ -1,0 +1,58 @@
+.editor {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.hintError {
+  font-size: var(--text-label);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+}
+
+.hintError::before {
+  content: "ERR ";
+  padding: 0 4px;
+  margin-right: 4px;
+  background: var(--ink);
+  color: var(--ground);
+}
+
+.headers {
+  display: grid;
+  gap: var(--space-2);
+  border: 0;
+  min-width: 0;
+}
+
+.headers legend {
+  margin-bottom: 6px;
+}
+
+.headerGroup {
+  display: grid;
+  gap: 6px;
+}
+
+.rowError {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-label);
+  overflow-wrap: anywhere;
+}
+
+.headerRow {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) var(--control-h);
+  gap: var(--space-2);
+}
+
+.headerRow :global(.btn) {
+  padding: 0;
+}

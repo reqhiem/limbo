@@ -1,0 +1,26 @@
+.app {
+  display: grid;
+  grid-template-columns: var(--col-endpoints) var(--col-requests) minmax(0, 1fr);
+  grid-template-rows: var(--header-h) minmax(0, 1fr);
+  grid-template-areas:
+    "header header header"
+    "endpoints requests detail";
+  height: 100vh;
+  height: 100dvh;
+  min-width: 960px;
+  overflow: hidden;
+}
+
+.requests {
+  grid-area: requests;
+  min-height: 0;
+  overflow-y: auto;
+  border-right: var(--rule);
+}
+
+.detail {
+  grid-area: detail;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}

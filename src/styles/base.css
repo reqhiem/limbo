@@ -1,0 +1,260 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  background: var(--ground);
+  color: var(--ink);
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink) var(--ground);
+}
+
+body {
+  font-family: var(--font);
+  font-size: var(--text-data);
+  font-stretch: var(--stretch-data);
+  font-variant-numeric: tabular-nums slashed-zero;
+  line-height: 1.5;
+  background: var(--ground);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink) var(--ground);
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--ground);
+}
+
+.inv ::selection,
+.inv::selection {
+  background: var(--ground);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* Inside an inverted block an outward white ring would vanish. */
+.inv :focus-visible {
+  outline-color: var(--ground);
+}
+
+/* Full-bleed items inside scrolling columns: draw the ring inside, in the item's own ink. */
+.focus-inset:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -4px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  min-width: 0;
+  background: var(--ground);
+  color: var(--ink);
+  border: var(--rule);
+  border-radius: 0;
+  caret-color: var(--ink);
+  font-size: var(--text-data);
+}
+
+input,
+select {
+  height: var(--control-h);
+  padding: 0 var(--space-2);
+}
+
+textarea {
+  display: block;
+  padding: var(--space-2);
+  resize: vertical;
+  line-height: 1.5;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--label);
+  opacity: 1;
+}
+
+input[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+  border-width: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline-offset: 1px;
+}
+
+pre {
+  font: inherit;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/* Controls */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: var(--control-h);
+  padding: 0 var(--space-3);
+  border: var(--rule);
+  background: var(--ground);
+  color: var(--ink);
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex: none;
+}
+
+.btn:hover,
+.btn:active,
+.btn.on,
+.btn.primary,
+.btn[aria-pressed="true"],
+.btn[aria-current="page"] {
+  background: var(--ink);
+  color: var(--ground);
+}
+
+.btn.primary:hover {
+  background: var(--ground);
+  color: var(--ink);
+}
+
+.btn.small {
+  height: 24px;
+  padding: 0 var(--space-2);
+}
+
+.btn:disabled,
+.btn:disabled:hover {
+  background: var(--ground);
+  color: var(--label);
+  border-style: dotted;
+  cursor: not-allowed;
+}
+
+/* Buttons sitting inside an inverted block mirror the vocabulary. */
+.inv .btn {
+  border-color: var(--ground);
+  background: var(--ink);
+  color: var(--ground);
+}
+
+.inv .btn:hover {
+  background: var(--ground);
+  color: var(--ink);
+}
+
+.btn svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.label {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--label);
+}
+
+.field {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  background: var(--ink);
+  color: var(--ground);
+  font-size: var(--text-label);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.inv {
+  background: var(--ink);
+  color: var(--ground);
+}
+
+.inv .label {
+  color: var(--ground);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+  }
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+  appearance: none;
+}

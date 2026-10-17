@@ -28,6 +28,7 @@ export type SummaryRow = {
 };
 
 export type RequestRow = SummaryRow & {
+  search: string;
   body_encoding: string;
   truncated: number;
   query: string;
@@ -71,6 +72,7 @@ export function toCaptured(r: RequestRow): CapturedRequest {
   const bytes = new Uint8Array(r.body);
   return {
     ...toSummary(r),
+    search: r.search,
     query: JSON.parse(r.query),
     headers: JSON.parse(r.headers),
     body: bodyEncoding === "utf8" ? utf8Decoder.decode(bytes) : bytes.toBase64(),

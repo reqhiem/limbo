@@ -1,0 +1,56 @@
+.tree {
+  /* The chevron hangs in this gutter so keys at one depth stay aligned. */
+  padding-left: 20px;
+  line-height: 1.6;
+}
+
+.line {
+  position: relative;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.toggle {
+  display: inline;
+  text-align: left;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.toggle svg {
+  position: absolute;
+  margin-left: -20px;
+  margin-top: 4px;
+  width: 12px;
+  height: 12px;
+}
+
+.toggle svg.open {
+  transform: rotate(90deg);
+}
+
+.toggle:hover .key,
+.toggle:hover .index {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.toggle:focus-visible {
+  outline-offset: 1px;
+}
+
+.key {
+  font-weight: 600;
+}
+
+.index,
+.punct,
+.count {
+  color: var(--label);
+}
+
+.count {
+  font-size: var(--text-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}

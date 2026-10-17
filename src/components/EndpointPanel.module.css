@@ -1,0 +1,134 @@
+.panel {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  max-width: 60rem;
+}
+
+.head {
+  display: grid;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--rule);
+}
+
+.title {
+  font-size: var(--text-display);
+  font-stretch: var(--stretch-display);
+  font-weight: 800;
+  line-height: 1.15;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-2);
+}
+
+.sub :global(.label) + :global(.label),
+.sub :global(.label):not(:first-child) {
+  margin-left: var(--space-3);
+}
+
+.waiting {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.waitingTitle {
+  font-size: var(--text-title);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.block {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.blockHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.url,
+.code {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  border: var(--rule);
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.waiting .code {
+  border-color: var(--ground);
+}
+
+.url {
+  font-size: var(--text-title);
+  font-weight: 600;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.section {
+  padding-bottom: var(--space-2);
+  border-bottom: var(--rule);
+  font-size: var(--text-label);
+  font-weight: 800;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+.subsection {
+  margin-top: var(--space-2);
+  font-size: var(--text-label);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+.saveRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.danger {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+}
+
+.dangerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--rule-fine);
+}
+
+.dangerTitle {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 1280px) {
+  .panel {
+    padding: var(--space-4);
+  }
+}

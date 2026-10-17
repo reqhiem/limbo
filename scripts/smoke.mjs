@@ -90,6 +90,11 @@ const d1 = await detail(slug, s1?.id);
 check("detail: query keeps duplicate x", JSON.stringify(d1?.query) === JSON.stringify([["x", "1"], ["x", "2"]]), d1?.query);
 check("detail: headers captured", d1?.headers?.some(([k, v]) => k === "x-smoke" && v === "1") && d1.headers.some(([k]) => k === "content-type"), d1?.headers);
 check("detail: body utf8, not truncated", d1?.body === '{"a":1}' && d1?.bodyEncoding === "utf8" && d1?.truncated === false, d1);
+check("detail: raw search kept", d1?.search === "?x=1&x=2", d1?.search);
+await hook(slug, "/raw?verbose&e=%7E%20", { method: "GET" });
+const dRaw = await detail(slug, (await latest(slug))?.id);
+check("detail: raw search keeps flags and encoding", dRaw?.search === "?verbose&e=%7E%20" && JSON.stringify(dRaw?.query) === JSON.stringify([["verbose", ""], ["e", "~ "]]), { search: dRaw?.search, query: dRaw?.query });
+await api("DELETE", `/endpoints/${slug}/requests/${dRaw?.id}`);
 check("endpoint requestCount/lastRequestAt updated", await api("GET", `/endpoints/${slug}`).then((r) => r.json?.requestCount === 1 && r.json?.lastRequestAt > 0));
 
 const ep404 = await hook("no-such-endpoint");

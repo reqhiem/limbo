@@ -5,6 +5,7 @@ export interface CaptureInput {
   slug: string;
   method: string;
   path: string;
+  search: string;
   query: KV[];
   headers: KV[];
   contentType: string | null;
@@ -45,6 +46,7 @@ export async function buildCapture(req: Request, slug: string, path: string, max
     slug,
     method: req.method,
     path,
+    search: url.search,
     query: [...url.searchParams],
     headers: [...req.headers],
     contentType: req.headers.get("content-type"),

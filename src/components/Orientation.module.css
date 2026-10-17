@@ -1,0 +1,41 @@
+.orientation {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-5);
+  max-width: 44rem;
+}
+
+.title {
+  font-size: var(--text-display);
+  font-stretch: var(--stretch-display);
+  font-weight: 800;
+  line-height: 1.15;
+  text-transform: uppercase;
+  padding-bottom: var(--space-3);
+  border-bottom: var(--rule);
+}
+
+.steps {
+  list-style: none;
+  display: grid;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: var(--rule-fine);
+  text-wrap: pretty;
+}
+
+.n {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  background: var(--ink);
+  color: var(--ground);
+  font-weight: 800;
+}

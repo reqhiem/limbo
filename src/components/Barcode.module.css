@@ -1,0 +1,11 @@
+.code {
+  display: block;
+  width: 100%;
+  height: 20px;
+  image-rendering: pixelated;
+}
+
+/* Inside any inverted block the white bars turn black. */
+:global(.inv) .code {
+  filter: invert(1);
+}

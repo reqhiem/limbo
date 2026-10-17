@@ -52,13 +52,14 @@ export class LimboStore extends DurableObject<Env> {
       if (!row) return null;
       const id = this.nextId(now);
       this.sql.exec(
-        `INSERT INTO requests (slug, id, received_at, method, path, content_type, size, ip, digest, body_encoding, truncated, query, headers, cf, body)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO requests (slug, id, received_at, method, path, search, content_type, size, ip, digest, body_encoding, truncated, query, headers, cf, body)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         input.slug,
         id,
         now,
         input.method,
         input.path,
+        input.search,
         input.contentType,
         input.size,
         input.ip,

@@ -1,0 +1,139 @@
+.detail {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.head {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+}
+
+.line {
+  font-size: var(--text-display);
+  font-stretch: var(--stretch-display);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.method {
+  margin-right: 0.15em;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  border-top: var(--rule);
+  border-bottom: var(--rule-fine);
+}
+
+/* Each fact closes its own cell, so wrapped rows still start flush left. */
+.facts > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--space-2) var(--space-4) var(--space-2) 0;
+  margin-right: var(--space-4);
+  border-right: var(--rule-fine);
+}
+
+.facts dd {
+  overflow-wrap: anywhere;
+}
+
+.ago {
+  color: var(--label);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.flags {
+  display: flex;
+  gap: var(--space-1);
+  margin-right: auto;
+}
+
+.inlineLink {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0 var(--space-5);
+  border: var(--rule);
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 0;
+  height: 36px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-label);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.tab + .tab {
+  border-left: var(--rule);
+}
+
+.tab:not(:global(.inv)):hover {
+  outline: 1px dotted var(--ink);
+  outline-offset: -4px;
+}
+
+.count {
+  font-weight: 500;
+  opacity: 1;
+}
+
+.tab:not(:global(.inv)) .count {
+  color: var(--label);
+}
+
+.panel {
+  flex: 1;
+  padding: var(--space-4) var(--space-5) var(--space-6);
+}
+
+.panel:focus-visible {
+  outline-offset: -2px;
+}
+
+@media (max-width: 1100px) {
+  .tab {
+    letter-spacing: 0.04em;
+  }
+}
+
+@media (max-width: 1280px) {
+  .head {
+    padding-inline: var(--space-4);
+  }
+
+  .tabs {
+    margin-inline: var(--space-4);
+  }
+
+  .panel {
+    padding-inline: var(--space-4);
+  }
+}
