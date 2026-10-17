@@ -29,8 +29,7 @@
   transform: rotate(90deg);
 }
 
-.toggle:hover .key,
-.toggle:hover .index {
+.toggle:hover .key {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -39,11 +38,8 @@
   outline-offset: 1px;
 }
 
-.key {
-  font-weight: 600;
-}
-
-.index,
+/* Structure at the label tier, values in full ink. */
+.key,
 .punct,
 .count {
   color: var(--label);

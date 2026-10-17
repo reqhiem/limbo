@@ -2,35 +2,49 @@ import { useId, useState, type FormEvent } from "react";
 import type { Endpoint, ResponseConfig } from "../../shared/types";
 import { api, errorMessage } from "../lib/api";
 import { sampleCurl } from "../lib/curl";
-import { formatAgo, formatDate, formatInt } from "../lib/format";
+import { formatAgo, formatDate, formatInt, useNow } from "../lib/format";
+import { hrefFor } from "../lib/router";
 import { ConfirmButton } from "./ConfirmButton";
 import { CopyButton } from "./CopyButton";
 import styles from "./EndpointPanel.module.css";
-import { IconTrash } from "./icons";
+import { IconArrowLeft, IconTrash } from "./icons";
 import { ResponseEditor, statusValid, type FieldError } from "./ResponseEditor";
 import { ErrorBlock } from "./States";
 
 interface Props {
   endpoint: Endpoint;
-  now: number;
   onUpdated: (endpoint: Endpoint) => void;
   onCleared: () => void;
   onDeleted: () => void;
 }
 
-const sameResponse = (a: ResponseConfig, b: ResponseConfig) => JSON.stringify(a) === JSON.stringify(b);
+const isBlankRow = ([k, v]: [string, string]) => !k.trim() && !v.trim();
 
-export function EndpointPanel({ endpoint, now, onUpdated, onCleared, onDeleted }: Props) {
+/** What a save would send: trimmed name, blank header rows dropped. */
+const normalized = (name: string, r: ResponseConfig) =>
+  JSON.stringify([name.trim(), r.status, r.contentType, r.body, r.headers.filter((h) => !isBlankRow(h))]);
+
+export function EndpointPanel({ endpoint, onUpdated, onCleared, onDeleted }: Props) {
+  const now = useNow(15_000);
   const id = useId();
   const url = `${location.origin}/h/${endpoint.slug}`;
   const sample = sampleCurl(url);
   const [name, setName] = useState(endpoint.name ?? "");
   const [response, setResponse] = useState(endpoint.response);
+  const [base, setBase] = useState(endpoint);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<FieldError | null>(null);
   const [dangerError, setDangerError] = useState<string | null>(null);
 
-  const dirty = name.trim() !== (endpoint.name ?? "") || !sameResponse(response, endpoint.response);
+  // While the form is clean, follow updates to the endpoint (refetches, saves from another tab).
+  if (base !== endpoint) {
+    setBase(endpoint);
+    if (normalized(name, response) === normalized(base.name ?? "", base.response)) {
+      setName(endpoint.name ?? "");
+      setResponse(endpoint.response);
+    }
+  }
+  const dirty = normalized(name, response) !== normalized(endpoint.name ?? "", endpoint.response);
   const valid = statusValid(response.status);
 
   const onSave = async (e: FormEvent) => {
@@ -39,7 +53,7 @@ export function EndpointPanel({ endpoint, now, onUpdated, onCleared, onDeleted }
     setSaving(true);
     setSaveError(null);
     // Rows left completely blank are editing leftovers, not headers; `kept` maps sent index -> editor row.
-    const kept = response.headers.flatMap(([k, v], i) => (k.trim() || v.trim() ? [i] : []));
+    const kept = response.headers.flatMap((h, i) => (isBlankRow(h) ? [] : [i]));
     try {
       const updated = await api.updateEndpoint(endpoint.slug, {
         name: name.trim() || null,
@@ -50,9 +64,13 @@ export function EndpointPanel({ endpoint, now, onUpdated, onCleared, onDeleted }
       onUpdated(updated);
     } catch (err) {
       const message = errorMessage(err);
-      // The server names the offending row as `response.headers[n]`.
+      // The server names the offending row as `response.headers[n]`, counting only the rows sent.
       const n = /response\.headers\[(\d+)\]/.exec(message)?.[1];
-      setSaveError({ message, headerRow: n === undefined ? null : (kept[Number(n)] ?? null) });
+      const row = n === undefined ? null : (kept[Number(n)] ?? null);
+      setSaveError({
+        message: row === null ? message : message.replace(/response\.headers\[\d+\]/, `Header ${row + 1}`),
+        headerRow: row,
+      });
     } finally {
       setSaving(false);
     }
@@ -82,6 +100,10 @@ export function EndpointPanel({ endpoint, now, onUpdated, onCleared, onDeleted }
   return (
     <section className={styles.panel} aria-labelledby={`${id}-title`}>
       <header className={styles.head}>
+        <a className={`btn small only-narrow ${styles.back}`} href={hrefFor(endpoint.slug)}>
+          <IconArrowLeft />
+          Requests
+        </a>
         <h1 id={`${id}-title`} className={styles.title}>
           {endpoint.name ?? endpoint.slug}
         </h1>
@@ -89,12 +111,12 @@ export function EndpointPanel({ endpoint, now, onUpdated, onCleared, onDeleted }
           <span className="label">Created</span> {formatDate(endpoint.createdAt)}
           <span className="label">Requests</span> {formatInt(endpoint.requestCount)}
           <span className="label">Last</span>{" "}
-          {endpoint.lastRequestAt === null ? "none yet" : formatAgo(endpoint.lastRequestAt, now)}
+          {endpoint.lastRequestAt === null ? "no requests yet" : formatAgo(endpoint.lastRequestAt, now)}
         </p>
       </header>
 
       {waiting && (
-        <div className={`inv ${styles.waiting}`}>
+        <div className={styles.waiting}>
           <h2 className={styles.waitingTitle}>Waiting for the first request</h2>
           <p>Paste the URL into your provider, or fire this from a terminal. It lands in the list within a second.</p>
           <pre className={styles.code}>{sample}</pre>
@@ -109,7 +131,9 @@ export function EndpointPanel({ endpoint, now, onUpdated, onCleared, onDeleted }
           <span className="label">Webhook URL</span>
           <CopyButton text={url} label="Copy URL" small />
         </div>
-        <code className={styles.url}>{url}</code>
+        <code className={styles.url} title={url}>
+          {url}
+        </code>
       </div>
 
       {!waiting && sampleBlock}
@@ -130,7 +154,7 @@ export function EndpointPanel({ endpoint, now, onUpdated, onCleared, onDeleted }
           error={saveError}
         />
         <div className={styles.saveRow}>
-          <button type="submit" className="btn primary" disabled={!dirty || !valid || saving}>
+          <button type="submit" className="btn" disabled={!dirty || !valid || saving}>
             {saving ? "Saving…" : "Save"}
           </button>
           {dirty && !saving && (

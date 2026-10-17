@@ -13,15 +13,19 @@ export const shellQuote = (s: string) => `'${s.replaceAll("'", `'\\''`)}'`;
 
 export const requestTarget = (req: Pick<Req, "slug" | "path" | "search">) => `/h/${req.slug}${req.path}${req.search}`;
 
+/**
+ * Everything captured is untrusted: the method is quoted (tchar allows ` $ | & '), --globoff stops
+ * `[]{}` globbing, and text bodies use --data-raw so a leading `@` is never read as a local file.
+ */
 export function toCurl(req: Req, origin: string): string {
   const parts = [
-    `curl -X ${req.method} ${shellQuote(origin + requestTarget(req))}`,
+    `curl --globoff -X ${shellQuote(req.method)} ${shellQuote(origin + requestTarget(req))}`,
     ...req.headers.filter(keepHeader).map(([k, v]) => `-H ${shellQuote(`${k}: ${v}`)}`),
   ];
   if (req.bodyEncoding === "base64" && req.body !== "") {
     return `printf '%s' ${shellQuote(req.body)} | base64 -d | ${[...parts, "--data-binary @-"].join(" \\\n  ")}`;
   }
-  if (req.body !== "") parts.push(`--data-binary ${shellQuote(req.body)}`);
+  if (req.body !== "") parts.push(`--data-raw ${shellQuote(req.body)}`);
   return parts.join(" \\\n  ");
 }
 

@@ -3,18 +3,20 @@ import type { Endpoint, RequestSummary, ServerMessage } from "../shared/types";
 import styles from "./App.module.css";
 import { EndpointList } from "./components/EndpointList";
 import { EndpointPanel } from "./components/EndpointPanel";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Header } from "./components/Header";
 import { Orientation } from "./components/Orientation";
-import { RequestDetail } from "./components/RequestDetail";
+import { RequestDetail, type Tab } from "./components/RequestDetail";
 import { RequestList } from "./components/RequestList";
 import { Empty, ErrorBlock, Skeleton } from "./components/States";
+import { announce, useAnnouncement } from "./lib/announce";
 import { api, errorMessage, isAbort } from "./lib/api";
-import { useNow } from "./lib/format";
 import { useLiveStream } from "./lib/live";
 import { hrefFor, navigate, useHashRoute } from "./lib/router";
 import { useDocumentTitle } from "./lib/useDocumentTitle";
 
 const MAX_ROWS = 500;
+const MAX_UNSEEN = 1000;
 const FILTER_DEBOUNCE_MS = 250;
 const ENDPOINTS_REFETCH_MS = 1000;
 const LIST_REFETCH_MS = 300;
@@ -30,147 +32,253 @@ interface ListState {
   items: RequestSummary[];
 }
 
-const without = (set: ReadonlySet<string>, id: string): ReadonlySet<string> => {
-  if (!set.has(id)) return set;
-  const next = new Set(set);
-  next.delete(id);
-  return next;
-};
+/** Union by id, newest (largest ULID) first, capped at the retention limit. */
+function mergeRequests(a: RequestSummary[], b: RequestSummary[]): RequestSummary[] {
+  const byId = new Map<string, RequestSummary>();
+  for (const r of [...a, ...b]) byId.set(r.id, r);
+  return [...byId.values()].sort((x, y) => (x.id < y.id ? 1 : x.id > y.id ? -1 : 0)).slice(0, MAX_ROWS);
+}
 
 export function App() {
-  const { slug, requestId } = useHashRoute();
-  const now = useNow(15_000);
-
-  // Endpoints
-  const [endpoints, setEndpoints] = useState<Endpoint[] | null>(null);
-  const [endpointsError, setEndpointsError] = useState<string | null>(null);
-  const loadEndpoints = useCallback(async () => {
-    try {
-      setEndpoints(await api.listEndpoints());
-      setEndpointsError(null);
-    } catch (err) {
-      setEndpointsError(errorMessage(err));
-    }
-  }, []);
+  const route = useHashRoute();
+  const { slug, requestId, settings } = route;
+  // Below 900px only one pane shows; the route decides which.
+  const pane = requestId || settings ? "detail" : slug ? "requests" : "endpoints";
+  const routeRef = useRef(route);
   useEffect(() => {
-    void loadEndpoints();
-  }, [loadEndpoints]);
-
-  // Filter: per endpoint, cleared when the endpoint changes; server-side and debounced.
-  const [filter, setFilter] = useState({ slug, text: "" });
-  if (filter.slug !== slug) setFilter({ slug, text: "" });
-  const filterText = filter.slug === slug ? filter.text : "";
-  const [debounced, setDebounced] = useState("");
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(filterText.trim()), FILTER_DEBOUNCE_MS);
-    return () => clearTimeout(t);
-  }, [filterText]);
-  const q = filterText.trim() ? debounced : "";
-
-  // Request list of the selected endpoint
-  const [list, setList] = useState<ListState | null>(null);
-  const [listError, setListError] = useState<{ slug: string; q: string; message: string } | null>(null);
-  const [listTick, setListTick] = useState(0);
-  useEffect(() => {
-    if (!slug) return;
-    const ac = new AbortController();
-    api.listRequests(slug, q, ac.signal).then(
-      (items) => {
-        setList({ slug, q, items });
-        setListError(null);
-      },
-      (err) => {
-        if (!isAbort(err)) setListError({ slug, q, message: errorMessage(err) });
-      },
-    );
-    return () => ac.abort();
-  }, [slug, q, listTick]);
-
-  // Live stream
-  const [paused, setPaused] = useState(false);
-  const [phase, setPhase] = useState(0);
-  const [unseen, setUnseen] = useState<ReadonlySet<string>>(() => new Set());
-  const [arriving, setArriving] = useState<ReadonlySet<string>>(() => new Set());
-  const [hiddenArrivals, setHiddenArrivals] = useState(0);
-  const [announcement, setAnnouncement] = useState("");
-  const current = useRef({ slug, q });
-  const timers = useRef<Partial<Record<TimerKey, Timer>>>({});
-  const toAnnounce = useRef<RequestSummary[]>([]);
-
-  useEffect(() => {
-    current.current = { slug, q };
+    routeRef.current = route;
   });
+
+  const timers = useRef<Partial<Record<TimerKey, Timer>>>({});
   useEffect(() => {
     const pending = timers.current;
     return () => Object.values(pending).forEach(clearTimeout);
   }, []);
-
   /** Runs `fn` once, `ms` after the first call of a burst. */
-  const schedule = (key: TimerKey, ms: number, fn: () => void) => {
+  const schedule = useCallback((key: TimerKey, ms: number, fn: () => void) => {
     if (timers.current[key] !== undefined) return;
     timers.current[key] = setTimeout(() => {
       timers.current[key] = undefined;
       fn();
     }, ms);
+  }, []);
+
+  // Endpoints. Every load and local edit takes a sequence number; a response that is no longer
+  // the latest (a newer load, or a create/save/delete/arrival meanwhile) is dropped.
+  const [endpoints, setEndpoints] = useState<Endpoint[] | null>(null);
+  const [endpointsError, setEndpointsError] = useState<string | null>(null);
+  const endpointsSeq = useRef(0);
+  const endpointsLoaded = useRef(false);
+  const loadEndpoints = useCallback(async () => {
+    const seq = ++endpointsSeq.current;
+    try {
+      const list = await api.listEndpoints();
+      if (seq !== endpointsSeq.current) return;
+      endpointsLoaded.current = true;
+      setEndpoints(list);
+      setEndpointsError(null);
+    } catch (err) {
+      if (seq === endpointsSeq.current) setEndpointsError(errorMessage(err));
+    }
+  }, []);
+  /** Local edit; also schedules a refetch so server-side truths (capped counts) come back. */
+  const editEndpoints = useCallback(
+    (fn: (eps: Endpoint[]) => Endpoint[]) => {
+      // Before the first load lands there is nothing to protect, so it is never dropped.
+      if (endpointsLoaded.current) endpointsSeq.current++;
+      setEndpoints((eps) => (eps ? fn(eps) : eps));
+      schedule("endpoints", ENDPOINTS_REFETCH_MS, () => void loadEndpoints());
+    },
+    [loadEndpoints, schedule],
+  );
+  useEffect(() => {
+    void loadEndpoints();
+  }, [loadEndpoints]);
+
+  // Filter: per endpoint, server-side, debounced. Changing endpoint or clearing the input resets
+  // the query synchronously, so a stale query is never sent for another endpoint.
+  const [filter, setFilter] = useState({ slug, text: "" });
+  const [q, setQ] = useState("");
+  if (filter.slug !== slug) {
+    setFilter({ slug, text: "" });
+    setQ("");
+  }
+  const filterText = filter.slug === slug ? filter.text : "";
+  useEffect(() => {
+    const text = filterText.trim();
+    if (!text) return;
+    const t = setTimeout(() => setQ(text), FILTER_DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [filterText]);
+  const onFilter = (text: string) => {
+    setFilter({ slug, text });
+    if (!text.trim()) setQ("");
   };
 
-  const onMessage = ({ request: r }: ServerMessage) => {
-    setPhase((p) => p + 1);
-    setUnseen((s) => new Set(s).add(r.id));
-    setEndpoints(
-      (eps) =>
-        eps &&
-        eps.map((e) =>
-          e.slug === r.slug
-            ? { ...e, requestCount: e.requestCount + 1, lastRequestAt: Math.max(e.lastRequestAt ?? 0, r.receivedAt) }
-            : e,
-        ),
+  // Unseen (arrived live, not opened yet; id -> slug) and arriving (the one-frame flash).
+  const [unseen, setUnseen] = useState<ReadonlyMap<string, string>>(() => new Map());
+  const [arriving, setArriving] = useState<ReadonlySet<string>>(() => new Set());
+  const markUnseen = useCallback((rs: RequestSummary[]) => {
+    const open = routeRef.current.requestId;
+    setUnseen((m) => {
+      const next = new Map(m);
+      for (const r of rs) if (r.id !== open) next.set(r.id, r.slug);
+      while (next.size > MAX_UNSEEN) next.delete(next.keys().next().value!);
+      return next;
+    });
+  }, []);
+  const dropUnseen = useCallback((keep: (id: string, slug: string) => boolean) => {
+    setUnseen((m) => {
+      const next = new Map([...m].filter(([id, s]) => keep(id, s)));
+      return next.size === m.size ? m : next;
+    });
+  }, []);
+  const flash = useCallback((ids: string[]) => {
+    if (!ids.length) return;
+    setArriving((s) => new Set([...s, ...ids]));
+    setTimeout(() => setArriving((s) => new Set([...s].filter((id) => !ids.includes(id)))), FLASH_CLEAR_MS);
+  }, []);
+
+  // Request list of the selected endpoint
+  const [list, setList] = useState<ListState | null>(null);
+  const [listError, setListError] = useState<{ slug: string; q: string; message: string } | null>(null);
+  const [listTick, setListTick] = useState(0);
+  /** Live arrivals recorded while a list fetch is in flight, merged into its result. */
+  const inflight = useRef<{ slug: string; q: string; arrivals: RequestSummary[] } | null>(null);
+  /** Ids held while paused: flashed and outlined once the resync shows they still exist. */
+  const markOnLoad = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    if (!slug) return;
+    const ac = new AbortController();
+    const flight = { slug, q, arrivals: [] as RequestSummary[] };
+    inflight.current = flight;
+    api.listRequests(slug, q, ac.signal).then(
+      (items) => {
+        if (inflight.current === flight) inflight.current = null;
+        const merged = q ? items : mergeRequests(items, flight.arrivals);
+        setList({ slug, q, items: merged });
+        setListError(null);
+        const marked = markOnLoad.current;
+        if (marked) {
+          markOnLoad.current = null;
+          const present = merged.filter((r) => marked.has(r.id));
+          markUnseen(present);
+          flash(present.map((r) => r.id));
+        }
+      },
+      (err) => {
+        if (inflight.current === flight) inflight.current = null;
+        if (!isAbort(err)) setListError({ slug, q, message: errorMessage(err) });
+      },
     );
-    // The server caps counts at the retention limit; refetch so they stay true.
-    schedule("endpoints", ENDPOINTS_REFETCH_MS, () => void loadEndpoints());
+    return () => ac.abort();
+  }, [slug, q, listTick, markUnseen, flash]);
 
-    const cur = current.current;
-    if (r.slug === cur.slug) {
-      if (cur.q) {
-        schedule("list", LIST_REFETCH_MS, () => setListTick((t) => t + 1));
-      } else {
-        setList((l) =>
-          l && l.slug === r.slug && l.q === ""
-            ? { ...l, items: [r, ...l.items.filter((x) => x.id !== r.id)].slice(0, MAX_ROWS) }
-            : l,
-        );
-        setArriving((s) => new Set(s).add(r.id));
-        setTimeout(() => setArriving((s) => without(s, r.id)), FLASH_CLEAR_MS);
-      }
-    }
+  // Live stream, pause, arrivals
+  const [paused, setPaused] = useState(false);
+  const pausedRef = useRef(false);
+  const held = useRef<RequestSummary[]>([]);
+  const [waiting, setWaiting] = useState(0);
+  const [phase, setPhase] = useState(0);
+  const [hiddenArrivals, setHiddenArrivals] = useState(0);
+  const arrivals = useRef(0);
+  const toAnnounce = useRef<RequestSummary[]>([]);
+  const current = useRef({ slug, q });
+  useEffect(() => {
+    current.current = { slug, q };
+  });
 
-    if (document.hidden) setHiddenArrivals((n) => n + 1);
-
+  const announceArrivals = (r: RequestSummary) => {
     toAnnounce.current.push(r);
     schedule("announce", ANNOUNCE_MS, () => {
       const batch = toAnnounce.current;
       toAnnounce.current = [];
       const first = batch[0];
       if (!first) return;
-      setAnnouncement(
+      // The running number keeps identical consecutive requests distinct for screen readers.
+      announce(
         batch.length === 1
-          ? `New ${first.method} request on ${first.slug}${first.path || "/"}`
-          : `${batch.length} new requests`,
+          ? `Request ${arrivals.current}: ${first.method} ${first.path || "/"} on ${first.slug}`
+          : `${batch.length} new requests, ${arrivals.current} so far`,
       );
     });
   };
 
-  const onReconnect = () => {
+  const applyArrival = (r: RequestSummary) => {
+    arrivals.current++;
+    setPhase((p) => p + 1);
+    markUnseen([r]);
+    editEndpoints((eps) =>
+      eps.map((e) =>
+        e.slug === r.slug
+          ? { ...e, requestCount: e.requestCount + 1, lastRequestAt: Math.max(e.lastRequestAt ?? 0, r.receivedAt) }
+          : e,
+      ),
+    );
+    const cur = current.current;
+    if (r.slug === cur.slug) {
+      if (cur.q) {
+        schedule("list", LIST_REFETCH_MS, () => setListTick((t) => t + 1));
+      } else {
+        const f = inflight.current;
+        if (f && f.slug === r.slug && !f.q) f.arrivals.push(r);
+        setList((l) => (l && l.slug === r.slug && !l.q ? { ...l, items: mergeRequests(l.items, [r]) } : l));
+        flash([r.id]);
+      }
+    }
+    announceArrivals(r);
+  };
+
+  const resync = () => {
     void loadEndpoints();
     setListTick((t) => t + 1);
   };
 
-  const { status, waiting } = useLiveStream(paused, onMessage, onReconnect);
+  const onMessage = ({ request: r }: ServerMessage) => {
+    if (document.hidden) setHiddenArrivals((n) => n + 1);
+    if (pausedRef.current) {
+      held.current.push(r);
+      setWaiting(held.current.length);
+      return;
+    }
+    applyArrival(r);
+  };
+
+  // While paused nothing refetches; resume always resyncs.
+  const onReconnect = () => {
+    if (!pausedRef.current) resync();
+  };
+
+  const status = useLiveStream(onMessage, onReconnect);
+
+  const togglePause = () => {
+    if (!pausedRef.current) {
+      pausedRef.current = true;
+      setPaused(true);
+      return;
+    }
+    pausedRef.current = false;
+    setPaused(false);
+    const batch = held.current;
+    held.current = [];
+    setWaiting(0);
+    if (batch.length) {
+      // No replay: the buffer may hold requests cleared or deleted since. Refetch, then mark what
+      // still exists. Other endpoints' requests can't be checked from here; they stay unseen.
+      const cur = current.current.slug;
+      markUnseen(batch.filter((r) => r.slug !== cur));
+      if (cur) markOnLoad.current = new Set(batch.filter((r) => r.slug === cur).map((r) => r.id));
+      arrivals.current += batch.length;
+      setPhase((p) => p + batch.length);
+      announce(`Resumed: ${batch.length} requests arrived while paused, ${arrivals.current} so far`);
+    }
+    resync();
+  };
 
   // Opening a request marks it seen.
   useEffect(() => {
-    if (requestId) setUnseen((s) => without(s, requestId));
-  }, [requestId]);
+    if (requestId) dropUnseen((id) => id !== requestId);
+  }, [requestId, dropUnseen]);
 
   useEffect(() => {
     const onVisibility = () => {
@@ -181,93 +289,124 @@ export function App() {
   }, []);
   useDocumentTitle(hiddenArrivals ? `(${hiddenArrivals}) Limbo` : "Limbo");
 
-  // Mutations from child panels
-  const patchEndpoint = (s: string, patch: (e: Endpoint) => Endpoint) =>
-    setEndpoints((eps) => eps && eps.map((e) => (e.slug === s ? patch(e) : e)));
+  // The detail tab survives moving between requests.
+  const [tab, setTab] = useState<Tab>("body");
 
+  // Mutations from child panels. Async completions navigate only if the route still points at
+  // the resource they acted on.
   const onCreated = (ep: Endpoint) => {
-    setEndpoints((eps) => [ep, ...(eps ?? []).filter((e) => e.slug !== ep.slug)]);
+    editEndpoints((eps) => [ep, ...eps.filter((e) => e.slug !== ep.slug)]);
     navigate(hrefFor(ep.slug));
   };
 
   const onRequestDeleted = (s: string, id: string) => {
-    setList((l) => l && { ...l, items: l.items.filter((x) => x.id !== id) });
-    patchEndpoint(s, (e) => ({ ...e, requestCount: Math.max(0, e.requestCount - 1) }));
-    schedule("endpoints", LIST_REFETCH_MS, () => void loadEndpoints());
-    navigate(hrefFor(s));
+    setList((l) => (l && l.slug === s ? { ...l, items: l.items.filter((x) => x.id !== id) } : l));
+    editEndpoints((eps) => eps.map((e) => (e.slug === s ? { ...e, requestCount: Math.max(0, e.requestCount - 1) } : e)));
+    dropUnseen((x) => x !== id);
+    const r = routeRef.current;
+    if (r.slug === s && r.requestId === id) navigate(hrefFor(s));
   };
 
   const onCleared = (s: string) => {
     setList((l) => (l && l.slug === s ? { ...l, items: [] } : l));
-    patchEndpoint(s, (e) => ({ ...e, requestCount: 0 }));
-    void loadEndpoints();
+    editEndpoints((eps) => eps.map((e) => (e.slug === s ? { ...e, requestCount: 0 } : e)));
+    dropUnseen((_, x) => x !== s);
   };
 
   const onEndpointDeleted = (s: string) => {
-    setEndpoints((eps) => eps && eps.filter((e) => e.slug !== s));
-    navigate(hrefFor(null));
+    editEndpoints((eps) => eps.filter((e) => e.slug !== s));
+    dropUnseen((_, x) => x !== s);
+    if (routeRef.current.slug === s) navigate(hrefFor(null));
   };
 
-  // Columns 2 and 3
+  // Columns
   const endpoint = slug && endpoints ? endpoints.find((e) => e.slug === slug) : undefined;
   const captured = endpoints ? endpoints.reduce((n, e) => n + e.requestCount, 0) : null;
+  const shown = slug && list?.slug === slug ? list : null;
 
   let requests;
-  let detail;
-  if (!slug) {
-    requests = (
-      <Empty title="No endpoint selected">
-        {endpoints?.length ? "Pick one on the left." : "Create one on the left."} Its requests stream in here.
-      </Empty>
-    );
-    detail = <Orientation hasEndpoints={!!endpoints?.length} />;
-  } else if (endpoint) {
-    const shown = list?.slug === slug ? list : null;
+  if (slug && endpoint && endpoints) {
     requests = (
       <RequestList
+        className={styles.requests}
         endpoint={endpoint}
+        endpoints={endpoints}
         requests={shown?.items ?? null}
         shownQuery={shown?.q ?? ""}
         loading={!shown || shown.q !== q || filterText.trim() !== q}
         error={listError && listError.slug === slug && listError.q === q ? listError.message : null}
         filter={filterText}
-        onFilter={(text) => setFilter({ slug, text })}
+        onFilter={onFilter}
         onRetry={() => setListTick((t) => t + 1)}
         selectedId={requestId}
+        settingsOpen={!requestId}
         unseen={unseen}
         arriving={arriving}
-        now={now}
       />
     );
-    detail = requestId ? (
-      <RequestDetail slug={slug} id={requestId} now={now} onDeleted={(id) => onRequestDeleted(slug, id)} />
-    ) : (
+  } else {
+    let body;
+    if (!slug) {
+      body = (
+        <Empty title="No endpoint selected">
+          {endpoints?.length ? "Pick one on the left." : "Create one on the left."} Its requests stream in here.
+        </Empty>
+      );
+    } else if (endpoints) {
+      body = (
+        <Empty title="Endpoint not found">
+          /h/{slug} does not exist. It may have been deleted. Pick another endpoint or create it again.
+        </Empty>
+      );
+    } else if (endpointsError) {
+      body = <ErrorBlock message={endpointsError} onRetry={() => void loadEndpoints()} />;
+    } else {
+      body = <Skeleton rows={8} />;
+    }
+    requests = <section className={`${styles.requests} ${styles.placeholder}`}>{body}</section>;
+  }
+
+  let detail;
+  if (slug && requestId) {
+    // Deep links render at once; the request fetch doesn't wait for the endpoint list.
+    detail = (
+      <RequestDetail
+        key={`${slug}/${requestId}`}
+        slug={slug}
+        id={requestId}
+        tab={tab}
+        onTab={setTab}
+        onDeleted={(id) => onRequestDeleted(slug, id)}
+      />
+    );
+  } else if (slug && endpoint) {
+    detail = (
       <EndpointPanel
         key={slug}
         endpoint={endpoint}
-        now={now}
-        onUpdated={(ep) => patchEndpoint(ep.slug, () => ep)}
+        onUpdated={(ep) => editEndpoints((eps) => eps.map((e) => (e.slug === ep.slug ? ep : e)))}
         onCleared={() => onCleared(slug)}
         onDeleted={() => onEndpointDeleted(slug)}
       />
     );
-  } else if (endpoints) {
-    requests = (
+  } else if (slug && endpoints) {
+    detail = (
       <Empty title="Endpoint not found">
-        /h/{slug} does not exist. It may have been deleted. Pick another endpoint or create it again.
+        <a className={styles.link} href={hrefFor(null)}>
+          Back to all endpoints
+        </a>
       </Empty>
     );
-    detail = null;
-  } else if (endpointsError) {
-    requests = <ErrorBlock message={endpointsError} onRetry={() => void loadEndpoints()} />;
-    detail = null;
+  } else if (slug) {
+    detail = endpointsError ? <ErrorBlock message={endpointsError} /> : <Skeleton rows={6} height={44} />;
   } else {
-    requests = <Skeleton rows={8} />;
-    detail = <Skeleton rows={6} height={44} />;
+    detail = <Orientation endpoints={endpoints} />;
   }
 
+  const announcement = useAnnouncement();
+
   return (
-    <div className={styles.app}>
+    <div className={styles.app} data-pane={pane}>
       <Header
         status={status}
         paused={paused}
@@ -275,20 +414,22 @@ export function App() {
         endpointCount={endpoints?.length ?? null}
         captured={captured}
         phase={phase}
-        onTogglePause={() => setPaused((p) => !p)}
+        onTogglePause={togglePause}
       />
       <EndpointList
+        className={styles.endpoints}
         endpoints={endpoints}
         error={endpoints ? null : endpointsError}
         selected={slug}
-        now={now}
         onRetry={() => void loadEndpoints()}
         onCreated={onCreated}
       />
-      {endpoint ? requests : <section className={styles.requests}>{requests}</section>}
-      <main className={styles.detail}>{detail}</main>
-      <div className="visually-hidden" aria-live="polite">
-        {announcement}
+      {requests}
+      <main className={styles.detail}>
+        <ErrorBoundary key={`${slug}/${requestId}/${settings}`}>{detail}</ErrorBoundary>
+      </main>
+      <div className="visually-hidden" role="status">
+        <span key={announcement.n}>{announcement.text}</span>
       </div>
     </div>
   );

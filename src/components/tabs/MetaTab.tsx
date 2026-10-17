@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { CapturedRequest, CfMeta } from "../../../shared/types";
-import { storedBytes } from "../../lib/body";
+import { bodyInfo } from "../../lib/body";
 import { requestTarget } from "../../lib/curl";
 import { formatBytes, formatClock, formatDate, formatInt } from "../../lib/format";
 import { KeyValueTable } from "../KeyValueTable";
@@ -28,13 +28,15 @@ export function MetaTab({ req }: { req: CapturedRequest }) {
     ["Full path", requestTarget(req)],
     ["Size", bytes(req.size)],
   ];
-  if (req.truncated) rows.push(["Stored", bytes(storedBytes(req))]);
+  if (req.truncated) rows.push(["Stored", bytes(bodyInfo(req).stored)]);
   rows.push(
     ["Content type", req.contentType ?? "none"],
     [
       "Received",
       `${new Date(req.receivedAt).toISOString()}\n${formatDate(req.receivedAt)} ${formatClock(req.receivedAt, true)} local`,
     ],
+    ["Response", String(req.responseStatus)],
+    ["Event", req.label ?? "none"],
     ["Request id", req.id],
     ["Digest", req.digest],
     ["IP", req.ip ?? "none"],

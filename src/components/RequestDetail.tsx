@@ -1,12 +1,13 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
 import type { CapturedRequest } from "../../shared/types";
 import { api, errorMessage, HttpError, isAbort } from "../lib/api";
-import { requestTarget, toCurl } from "../lib/curl";
-import { formatAgo, formatClock, formatDate, formatInt } from "../lib/format";
+import { bodyInfo, downloadBytes, downloadName } from "../lib/body";
+import { toCurl } from "../lib/curl";
+import { formatAgo, formatClock, formatDate, formatInt, useNow } from "../lib/format";
 import { hrefFor } from "../lib/router";
 import { ConfirmButton } from "./ConfirmButton";
 import { CopyButton } from "./CopyButton";
-import { IconTrash } from "./icons";
+import { IconArrowLeft, IconDownload, IconTrash } from "./icons";
 import styles from "./RequestDetail.module.css";
 import { Empty, ErrorBlock, Skeleton } from "./States";
 import { BodyTab } from "./tabs/BodyTab";
@@ -15,8 +16,10 @@ import { MetaTab } from "./tabs/MetaTab";
 import { QueryTab } from "./tabs/QueryTab";
 import { RawTab } from "./tabs/RawTab";
 
-const TABS = ["body", "headers", "query", "meta", "raw"] as const;
-type Tab = (typeof TABS)[number];
+export const TABS = ["body", "headers", "query", "meta", "raw"] as const;
+export type Tab = (typeof TABS)[number];
+
+const LABELS: Record<Tab, string> = { body: "Body", headers: "Headers", query: "Query", meta: "Metadata", raw: "Raw" };
 
 type Load =
   | { state: "loading" }
@@ -27,20 +30,26 @@ type Load =
 interface Props {
   slug: string;
   id: string;
-  now: number;
+  /** Lifted to the app so the chosen tab survives moving between requests. */
+  tab: Tab;
+  onTab: (tab: Tab) => void;
   onDeleted: (id: string) => void;
 }
 
-export function RequestDetail({ slug, id, now, onDeleted }: Props) {
+/** Ticks on its own so the open request (and a 1 MB body) never re-renders for the clock. */
+function Ago({ ms }: { ms: number }) {
+  const now = useNow(10_000);
+  return <>{formatAgo(ms, now)}</>;
+}
+
+/** Keyed by slug/id by the parent: every request starts from a clean load state. */
+export function RequestDetail({ slug, id, tab, onTab, onDeleted }: Props) {
   const [load, setLoad] = useState<Load>({ state: "loading" });
   const [attempt, setAttempt] = useState(0);
-  const [tab, setTab] = useState<Tab>("body");
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     const ac = new AbortController();
-    setLoad({ state: "loading" });
-    setDeleteError(null);
     api.getRequest(slug, id, ac.signal).then(
       (req) => setLoad({ state: "ok", req }),
       (err) => {
@@ -52,45 +61,55 @@ export function RequestDetail({ slug, id, now, onDeleted }: Props) {
     return () => ac.abort();
   }, [slug, id, attempt]);
 
+  const back = (
+    <a className={`btn small only-narrow ${styles.back}`} href={hrefFor(slug)}>
+      <IconArrowLeft />
+      Requests
+    </a>
+  );
+
   if (load.state === "loading") return <Skeleton rows={7} height={44} />;
   if (load.state === "missing") {
     return (
-      <Empty title="Request not found">
-        It was deleted or expired (requests are kept 7 days, 500 per endpoint).{" "}
-        <a className={styles.inlineLink} href={hrefFor(slug)}>
-          Back to the endpoint
-        </a>
-      </Empty>
+      <div className={styles.state}>
+        {back}
+        <Empty title="Request not found">
+          It was deleted or expired (requests are kept 7 days, 500 per endpoint).{" "}
+          <a className={styles.inlineLink} href={hrefFor(slug)}>
+            Back to the endpoint
+          </a>
+        </Empty>
+      </div>
     );
   }
-  if (load.state === "error") return <ErrorBlock message={load.message} onRetry={() => setAttempt((a) => a + 1)} />;
+  if (load.state === "error") {
+    return (
+      <div className={styles.state}>
+        {back}
+        <ErrorBlock
+          message={load.message}
+          onRetry={() => {
+            setLoad({ state: "loading" });
+            setAttempt((a) => a + 1);
+          }}
+        />
+      </div>
+    );
+  }
 
   const { req } = load;
   const binary = req.bodyEncoding === "base64";
-  const counts: Record<Tab, string> = {
-    body: "",
-    headers: String(req.headers.length),
-    query: String(req.query.length),
-    meta: "",
-    raw: "",
-  };
-  const labels: Record<Tab, string> = { body: "Body", headers: "Headers", query: "Query", meta: "Metadata", raw: "Raw" };
+  const { view } = bodyInfo(req);
+  const counts: Partial<Record<Tab, string>> = { headers: String(req.headers.length), query: String(req.query.length) };
 
   const onTabKey = (e: KeyboardEvent) => {
     const i = TABS.indexOf(tab);
-    const next =
-      e.key === "ArrowRight"
-        ? TABS[(i + 1) % TABS.length]
-        : e.key === "ArrowLeft"
-          ? TABS[(i - 1 + TABS.length) % TABS.length]
-          : e.key === "Home"
-            ? TABS[0]
-            : e.key === "End"
-              ? TABS[TABS.length - 1]
-              : undefined;
-    if (!next) return;
+    const keys: Record<string, number> = { ArrowRight: i + 1, ArrowLeft: i - 1 + TABS.length, Home: 0, End: TABS.length - 1 };
+    const to = keys[e.key];
+    if (to === undefined) return;
     e.preventDefault();
-    setTab(next);
+    const next = TABS[to % TABS.length]!;
+    onTab(next);
     document.getElementById(`tab-${next}`)?.focus();
   };
 
@@ -106,15 +125,29 @@ export function RequestDetail({ slug, id, now, onDeleted }: Props) {
   return (
     <article className={styles.detail} aria-labelledby="request-line">
       <header className={styles.head}>
+        {back}
         <h1 id="request-line" className={styles.line}>
-          <span className={styles.method}>{req.method}</span> <span>{requestTarget(req)}</span>
+          <span className={styles.method}>{req.method}</span>{" "}
+          <span className={styles.prefix}>/h/{req.slug}</span>
+          <span>{`${req.path}${req.search}`}</span>
         </h1>
+        {(req.label || req.truncated || binary) && (
+          <p className={styles.tags}>
+            {req.label && <span className={styles.event}>{req.label}</span>}
+            {req.truncated && <span className="badge">Truncated</span>}
+            {binary && <span className="badge">Binary</span>}
+          </p>
+        )}
         <dl className={styles.facts}>
-          <div>
+          <div className={styles.received}>
             <dt className="label">Received</dt>
             <dd>
-              {formatDate(req.receivedAt)} {formatClock(req.receivedAt, true)}{" "}
-              <span className={styles.ago}>{formatAgo(req.receivedAt, now)}</span>
+              {/* Date only when it isn't today; the full ISO time is under Metadata. */}
+              {formatDate(req.receivedAt) === formatDate(Date.now()) ? "" : `${formatDate(req.receivedAt)} `}
+              {formatClock(req.receivedAt, true)}{" "}
+              <span className={styles.ago}>
+                <Ago ms={req.receivedAt} />
+              </span>
             </dd>
           </div>
           <div>
@@ -122,24 +155,40 @@ export function RequestDetail({ slug, id, now, onDeleted }: Props) {
             <dd>{formatInt(req.size)} B</dd>
           </div>
           <div>
-            <dt className="label">Content type</dt>
-            <dd>{req.contentType ?? "none"}</dd>
+            <dt className="label">Response</dt>
+            <dd>{req.responseStatus}</dd>
           </div>
-          <div>
+          <div className={styles.ip}>
             <dt className="label">IP</dt>
-            <dd>{req.ip ?? "none"}</dd>
+            <dd title={req.ip ?? undefined}>{req.ip ?? "none"}</dd>
+          </div>
+          <div className={styles.type}>
+            <dt className="label">Content type</dt>
+            <dd title={req.contentType ?? undefined}>{req.contentType ?? "none"}</dd>
           </div>
         </dl>
         <div className={styles.actions}>
-          {(req.truncated || binary) && (
-            <div className={styles.flags}>
-              {req.truncated && <span className="badge">Truncated</span>}
-              {binary && <span className="badge">Binary</span>}
-            </div>
+          {req.body === "" ? (
+            <button type="button" className="btn small" disabled>
+              No body
+            </button>
+          ) : (
+            <CopyButton text={req.body} label={binary ? "Copy base64" : "Copy body"} small />
           )}
-          {req.body !== "" && <CopyButton text={req.body} label={binary ? "Copy base64" : "Copy body"} small />}
           <CopyButton text={() => toCurl(req, location.origin)} label="Copy as cURL" small />
-          <ConfirmButton label="Delete" icon={<IconTrash />} onConfirm={onDelete} small />
+          {view.kind === "binary" && (
+            <button
+              type="button"
+              className="btn small"
+              onClick={() => downloadBytes(view.bytes, downloadName(req.id, req.contentType))}
+            >
+              <IconDownload />
+              Download
+            </button>
+          )}
+          <span className={styles.delete}>
+            <ConfirmButton label="Delete" icon={<IconTrash />} onConfirm={onDelete} small />
+          </span>
         </div>
         {deleteError && <ErrorBlock message={deleteError} />}
       </header>
@@ -155,16 +204,16 @@ export function RequestDetail({ slug, id, now, onDeleted }: Props) {
             aria-selected={t === tab}
             aria-controls="tabpanel"
             tabIndex={t === tab ? 0 : -1}
-            onClick={() => setTab(t)}
+            onClick={() => onTab(t)}
           >
-            {labels[t]}
+            {LABELS[t]}
             {counts[t] && <span className={styles.count}>{counts[t]}</span>}
           </button>
         ))}
       </div>
 
       <div id="tabpanel" className={styles.panel} role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0}>
-        {tab === "body" && <BodyTab key={req.id} req={req} />}
+        {tab === "body" && <BodyTab req={req} />}
         {tab === "headers" && <HeadersTab req={req} />}
         {tab === "query" && <QueryTab req={req} />}
         {tab === "meta" && <MetaTab req={req} />}
@@ -173,4 +222,3 @@ export function RequestDetail({ slug, id, now, onDeleted }: Props) {
     </article>
   );
 }
-

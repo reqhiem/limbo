@@ -1,27 +1,56 @@
+import { useState } from "react";
 import type { Endpoint } from "../../shared/types";
-import { formatAgo } from "../lib/format";
+import { formatAgo, useNow } from "../lib/format";
 import { hrefFor } from "../lib/router";
 import { CreateEndpointForm } from "./CreateEndpointForm";
 import styles from "./EndpointList.module.css";
+import { IconClose, IconPlus } from "./icons";
 import { Empty, ErrorBlock, Skeleton } from "./States";
 
 interface Props {
+  className?: string;
   endpoints: Endpoint[] | null;
   error: string | null;
   selected: string | null;
-  now: number;
   onRetry: () => void;
   onCreated: (endpoint: Endpoint) => void;
 }
 
-export function EndpointList({ endpoints, error, selected, now, onRetry, onCreated }: Props) {
+export function EndpointList({ className, endpoints, error, selected, onRetry, onCreated }: Props) {
+  const now = useNow(15_000);
+  const [creating, setCreating] = useState(false);
+  // With nothing to list, the form is the whole point: keep it open.
+  const formOpen = creating || endpoints?.length === 0;
+
   return (
-    <nav className={styles.column} aria-labelledby="endpoints-title">
+    <nav className={`${styles.column} ${className ?? ""}`} aria-labelledby="endpoints-title">
       <div className={styles.head}>
         <h2 id="endpoints-title" className="label">
-          Endpoints
+          Endpoints{endpoints ? ` · ${endpoints.length}` : ""}
         </h2>
+        {endpoints?.length !== 0 && (
+          <button
+            type="button"
+            className="btn small"
+            aria-expanded={formOpen}
+            aria-controls="create-endpoint"
+            onClick={() => setCreating((c) => !c)}
+          >
+            {formOpen ? <IconClose /> : <IconPlus />}
+            {formOpen ? "Cancel" : "New"}
+          </button>
+        )}
       </div>
+      {formOpen && (
+        <CreateEndpointForm
+          id="create-endpoint"
+          onCancel={() => setCreating(false)}
+          onCreated={(ep) => {
+            setCreating(false);
+            onCreated(ep);
+          }}
+        />
+      )}
       <div className={styles.scroll}>
         {error ? (
           <ErrorBlock message={error} onRetry={onRetry} />
@@ -48,8 +77,13 @@ export function EndpointList({ endpoints, error, selected, now, onRetry, onCreat
                       </span>
                     </span>
                     <span className={styles.last}>
-                      <span className="label">Last</span>{" "}
-                      {e.lastRequestAt === null ? <span className="label">none yet</span> : formatAgo(e.lastRequestAt, now)}
+                      {e.lastRequestAt === null ? (
+                        <span className="label">No requests yet</span>
+                      ) : (
+                        <>
+                          <span className="label">Last</span> {formatAgo(e.lastRequestAt, now)}
+                        </>
+                      )}
                     </span>
                   </a>
                 </li>
@@ -58,7 +92,6 @@ export function EndpointList({ endpoints, error, selected, now, onRetry, onCreat
           </ul>
         )}
       </div>
-      <CreateEndpointForm onCreated={onCreated} />
     </nav>
   );
 }

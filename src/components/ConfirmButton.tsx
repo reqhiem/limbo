@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { announce } from "../lib/announce";
 
 interface Props {
   label: string;
@@ -22,6 +23,7 @@ export function ConfirmButton({ label, onConfirm, icon, small = false, disabled 
   const onClick = async () => {
     if (!armed) {
       setArmed(true);
+      announce(`${label}: press again within 3 seconds to confirm`);
       return;
     }
     setArmed(false);
@@ -41,7 +43,6 @@ export function ConfirmButton({ label, onConfirm, icon, small = false, disabled 
       onKeyDown={(e) => e.key === "Escape" && setArmed(false)}
       onBlur={() => setArmed(false)}
       disabled={disabled || busy}
-      aria-live="polite"
     >
       {icon}
       {busy ? `${label}…` : armed ? (

@@ -4,10 +4,21 @@
   min-height: 100%;
 }
 
+.state {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+}
+
 .head {
   display: grid;
   gap: var(--space-3);
   padding: var(--space-5) var(--space-5) var(--space-4);
+}
+
+.back {
+  justify-self: start;
 }
 
 .line {
@@ -17,32 +28,60 @@
   line-height: 1.15;
   letter-spacing: -0.01em;
   overflow-wrap: anywhere;
-  text-wrap: balance;
+  hyphens: none;
 }
 
 .method {
   margin-right: 0.15em;
 }
 
-.facts {
+/* Atomic: the slug moves to the next line whole instead of breaking at its hyphen. */
+.prefix {
+  display: inline-block;
+  max-width: 100%;
+  color: var(--label);
+}
+
+.tags {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.event {
+  margin-right: var(--space-2);
+  font-size: var(--text-title);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+/* Five facts on one line; the content type yields with an ellipsis. Narrow: 1 + 2 + 2, no orphan. */
+.facts {
+  display: grid;
+  grid-template-columns: auto auto auto minmax(0, auto) minmax(0, 1fr);
   border-top: var(--rule);
   border-bottom: var(--rule-fine);
 }
 
-/* Each fact closes its own cell, so wrapped rows still start flush left. */
 .facts > div {
   display: grid;
   gap: 2px;
   min-width: 0;
-  padding: var(--space-2) var(--space-4) var(--space-2) 0;
-  margin-right: var(--space-4);
-  border-right: var(--rule-fine);
+  padding: var(--space-2) var(--space-4);
+  border-left: var(--rule-fine);
 }
 
+.facts > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.facts dt,
 .facts dd {
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ago {
@@ -56,10 +95,8 @@
   gap: var(--space-2);
 }
 
-.flags {
-  display: flex;
-  gap: var(--space-1);
-  margin-right: auto;
+.delete {
+  margin-left: auto;
 }
 
 .inlineLink {
@@ -102,10 +139,6 @@
 
 .count {
   font-weight: 500;
-  opacity: 1;
-}
-
-.tab:not(:global(.inv)) .count {
   color: var(--label);
 }
 
@@ -118,14 +151,9 @@
   outline-offset: -2px;
 }
 
-@media (max-width: 1100px) {
-  .tab {
-    letter-spacing: 0.04em;
-  }
-}
-
-@media (max-width: 1280px) {
-  .head {
+@container (max-width: 760px) {
+  .head,
+  .state {
     padding-inline: var(--space-4);
   }
 
@@ -135,5 +163,36 @@
 
   .panel {
     padding-inline: var(--space-4);
+  }
+}
+
+@container (max-width: 700px) {
+  .facts {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .received {
+    grid-column: 1 / -1;
+  }
+
+  .facts > div:nth-child(2),
+  .facts > div:nth-child(4) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .facts > div:nth-child(n + 2) {
+    border-top: var(--rule-fine);
+  }
+}
+
+@container (max-width: 600px) {
+  .tab {
+    flex-direction: column;
+    gap: 0;
+    height: 44px;
+    padding: 0 2px;
+    letter-spacing: 0.02em;
+    line-height: 1.3;
   }
 }

@@ -1,7 +1,7 @@
 .row {
   position: relative;
   display: grid;
-  grid-template-columns: 5.5em minmax(0, 1fr) 96px 5.75em;
+  grid-template-columns: minmax(0, 1fr) 120px 4.75em;
   align-items: center;
   gap: var(--space-3);
   height: var(--row-h);
@@ -13,29 +13,46 @@
   outline-offset: -4px;
 }
 
-.method {
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.where {
+.main {
   display: grid;
   min-width: 0;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
-.path,
-.ip {
+.line1,
+.line2 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.ip {
+.safe {
+  color: var(--label);
+  font-weight: 600;
+}
+
+.mutating {
+  font-weight: 800;
+}
+
+.line2 {
   font-size: var(--text-label);
+}
+
+.status {
+  height: 15px;
+  margin-right: 6px;
+  padding: 0 4px;
+  font-size: 10px;
+  vertical-align: 1px;
+}
+
+.event {
+  font-weight: 600;
+}
+
+.dim {
+  color: var(--label);
 }
 
 .when {
@@ -84,9 +101,9 @@
   }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 600px) {
   .row {
-    grid-template-columns: 4.5em minmax(0, 1fr) 64px 5.25em;
+    grid-template-columns: minmax(0, 1fr) 72px 4.5em;
     gap: var(--space-2);
     padding: 0 var(--space-3);
   }

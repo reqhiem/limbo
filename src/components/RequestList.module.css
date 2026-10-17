@@ -1,5 +1,4 @@
 .column {
-  grid-area: requests;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -18,22 +17,35 @@
 .titleRow {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   min-width: 0;
 }
 
-.count {
-  margin-right: auto;
-  white-space: nowrap;
+.back {
+  width: var(--control-h);
+  height: var(--control-h);
+  padding: 0;
 }
 
 .title {
+  min-width: 0;
   font-size: var(--text-title);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.switcher {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.count {
+  margin-right: auto;
   white-space: nowrap;
 }
 
@@ -44,16 +56,19 @@
   min-width: 0;
 }
 
+/* One line, never broken mid-slug; the full URL is in `title` and on the clipboard. */
 .url {
   flex: 1;
   min-width: 0;
-  min-height: 24px;
-  padding: 2px var(--space-2);
+  height: 24px;
+  padding: 0 var(--space-2);
   border: var(--rule-fine);
   font: inherit;
   font-size: var(--text-label);
-  line-height: 18px;
-  overflow-wrap: anywhere;
+  line-height: 22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .filter {
@@ -101,13 +116,21 @@
   border-bottom: var(--rule-fine);
 }
 
-@media (max-width: 1100px) {
-  .head,
-  .filter {
-    padding-inline: var(--space-3);
+/* Below 1280px the switcher names the endpoint; the heading stays for assistive tech. */
+@media (max-width: 1279px) {
+  .title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
-  /* Icon-only Settings; the text stays for assistive tech. */
+  .count {
+    margin-right: 0;
+  }
+
   .settingsText {
     position: absolute;
     width: 1px;
@@ -115,5 +138,28 @@
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+
+  .settings {
+    width: var(--control-h);
+    height: var(--control-h);
+    padding: 0;
+  }
+}
+
+/* One pane at a time: this pane is the list, so Settings is a link out, never "current". */
+@media (max-width: 899px) {
+  .settings[aria-current] {
+    background: var(--ground);
+    color: var(--ink);
+  }
+
+  .head,
+  .filter {
+    padding-inline: var(--space-3);
+  }
+
+  .count {
+    display: none;
   }
 }

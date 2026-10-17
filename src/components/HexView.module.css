@@ -10,8 +10,13 @@
   gap: 2ch;
 }
 
-.offset {
+.offset,
+.dim {
   color: var(--label);
+}
+
+.bytes {
+  min-width: 48ch;
 }
 
 .ascii {

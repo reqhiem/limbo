@@ -18,7 +18,7 @@
   --text-data: 0.8125rem; /* 13px */
   --text-title: 1rem; /* 16px */
   --text-display: 1.75rem; /* 28px */
-  --track-label: 0.12em;
+  --track-label: 0.08em;
   --track-wide: 0.32em;
 
   --space-1: 4px;
@@ -29,24 +29,11 @@
   --space-6: 32px;
 
   --header-h: 56px;
+  /* Panes: three columns >= 1280px, two from 900px, one below (see App.module.css). */
   --col-endpoints: 248px;
   --col-requests: 460px;
   --control-h: 32px;
   --row-h: 52px;
 
   --flash: 120ms;
-}
-
-@media (max-width: 1280px) {
-  :root {
-    --col-endpoints: 216px;
-    --col-requests: 380px;
-  }
-}
-
-@media (max-width: 1100px) {
-  :root {
-    --col-endpoints: 200px;
-    --col-requests: 340px;
-  }
 }

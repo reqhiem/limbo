@@ -2,7 +2,7 @@
   display: grid;
   gap: var(--space-3);
   padding: var(--space-4);
-  border-top: var(--rule);
+  border-bottom: var(--rule);
   flex: none;
 }
 

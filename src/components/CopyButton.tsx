@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { announce } from "../lib/announce";
 import { copyText } from "../lib/clipboard";
 import styles from "./CopyButton.module.css";
 import { IconCheck, IconCopy } from "./icons";
@@ -24,6 +25,7 @@ export function CopyButton({ text, label = "Copy", small = false }: Props) {
       next = "failed";
     }
     setState(next);
+    announce(next === "copied" ? `${label}: copied` : `${label}: copy failed`);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setState("idle"), 1200);
   };
@@ -33,7 +35,7 @@ export function CopyButton({ text, label = "Copy", small = false }: Props) {
     <button type="button" className={`btn${small ? " small" : ""}${state === "idle" ? "" : " on"}`} onClick={onClick}>
       {state === "copied" ? <IconCheck /> : <IconCopy />}
       {/* All labels stacked in one grid cell so the button never changes width. */}
-      <span className={styles.stack} aria-live="polite">
+      <span className={styles.stack}>
         <span aria-hidden={shown !== label}>{label}</span>
         <span aria-hidden={shown !== "Copied"}>Copied</span>
         <span aria-hidden={shown !== "Failed"}>Failed</span>

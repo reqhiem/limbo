@@ -43,3 +43,82 @@
   letter-spacing: var(--track-label);
   text-transform: uppercase;
 }
+
+/* Body beside its signal when the detail column is wide enough; folded underneath otherwise. */
+.bodyGrid {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.bodyMain {
+  min-width: 0;
+}
+
+/* A 16-byte hex dump needs ~520px of its own, so binary bodies go beside their signal later. */
+@container (min-width: 680px) {
+  .bodyGrid:not(.wide) {
+    grid-template-columns: minmax(0, 1fr) 13.5rem;
+    align-items: start;
+  }
+
+  .bodyGrid:not(.wide) .signal {
+    position: sticky;
+    top: var(--space-4);
+    padding-top: 0;
+    padding-left: var(--space-4);
+    border-top: 0;
+    border-left: var(--rule);
+  }
+}
+
+@container (min-width: 960px) {
+  .wide {
+    grid-template-columns: minmax(0, 1fr) 13.5rem;
+    align-items: start;
+  }
+
+  .wide .signal {
+    position: sticky;
+    top: var(--space-4);
+    padding-top: 0;
+    padding-left: var(--space-4);
+    border-top: 0;
+    border-left: var(--rule);
+  }
+}
+
+.signal {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--rule);
+}
+
+.signalCode {
+  height: 64px;
+}
+
+.digest {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  column-gap: 1.5ch;
+  font: inherit;
+  font-size: var(--text-label);
+  letter-spacing: 0.06em;
+}
+
+.signalFacts {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.signalFacts > div {
+  display: grid;
+  gap: 2px;
+  padding-top: var(--space-2);
+  border-top: var(--rule-fine);
+}
+
+.signalFacts dd {
+  overflow-wrap: anywhere;
+}

@@ -157,16 +157,10 @@ table {
 .btn:hover,
 .btn:active,
 .btn.on,
-.btn.primary,
 .btn[aria-pressed="true"],
 .btn[aria-current="page"] {
   background: var(--ink);
   color: var(--ground);
-}
-
-.btn.primary:hover {
-  background: var(--ground);
-  color: var(--ink);
 }
 
 .btn.small {
@@ -215,13 +209,13 @@ table {
   min-width: 0;
 }
 
+/* Flags are outlined; only `.solid` (ERR) inverts. */
 .badge {
   display: inline-flex;
   align-items: center;
   height: 18px;
-  padding: 0 6px;
-  background: var(--ink);
-  color: var(--ground);
+  padding: 0 5px;
+  border: 1px solid currentColor;
   font-size: var(--text-label);
   font-weight: 700;
   letter-spacing: var(--track-label);
@@ -229,12 +223,16 @@ table {
   white-space: nowrap;
 }
 
-.inv {
+.badge.solid {
+  border-color: var(--ink);
   background: var(--ink);
   color: var(--ground);
 }
 
-.inv .label {
+/* Inverted blocks mirror the label tier: black at 62% on white. */
+.inv {
+  --label: rgb(0 0 0 / 0.62);
+  background: var(--ink);
   color: var(--ground);
 }
 
@@ -245,6 +243,19 @@ table {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* Pane helpers: `.only-narrow` shows below 900px, `.below-wide` below 1280px. */
+@media (min-width: 900px) {
+  .only-narrow {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .below-wide {
+    display: none !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

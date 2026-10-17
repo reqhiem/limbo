@@ -29,14 +29,6 @@ export function formatDate(ms: number): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-/** Clock for today, short date + time otherwise (retention spans 7 days). */
-export function formatStamp(ms: number, now = Date.now()): string {
-  const d = new Date(ms);
-  const today = new Date(now);
-  if (d.toDateString() === today.toDateString()) return formatClock(ms);
-  return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
 export function formatAgo(ms: number, now = Date.now()): string {
   const s = Math.max(0, Math.round((now - ms) / 1000));
   if (s < 5) return "just now";

@@ -1,20 +1,36 @@
 import { useEffect, useRef } from "react";
 import styles from "./Barcode.module.css";
 
-/** Bar/space widths (in modules) derived from a hex digest; bars and spaces alternate, bar first. */
+/**
+ * Run widths (in units) from the first 8 digest bytes: each 2-bit group is one run of 1–3 units,
+ * alternating bar/space, bar first. Same digest, same code.
+ */
 export function barcodeRuns(digest: string): number[] {
-  const runs = [1, 1, 1, 1]; // start guard: bar, space, bar, space
-  for (let i = 0; i + 1 < digest.length && i < 32; i += 2) {
+  const runs: number[] = [];
+  for (let i = 0; i < 16; i += 2) {
     const b = parseInt(digest.slice(i, i + 2), 16) || 0;
-    // Fold the high nibble into the low one so all 128 bits shape the code.
-    runs.push(1 + ((b ^ (b >> 4)) & 3), 1 + (((b >> 2) ^ (b >> 6)) & 3));
+    for (let shift = 6; shift >= 0; shift -= 2) runs.push((((b >> shift) & 3) % 3) + 1);
   }
-  runs.push(1, 1, 1); // end guard: bar, space, bar
   return runs;
 }
 
+// One observer for every barcode on the page (up to 500 rows).
+const redraws = new WeakMap<Element, () => void>();
+let observer: ResizeObserver | null = null;
+const sharedObserver = () =>
+  (observer ??= new ResizeObserver((entries) => {
+    for (const entry of entries) redraws.get(entry.target)?.();
+  }));
+
+interface Props {
+  digest: string;
+  /** Width of one unit in CSS px; bars are never thinner than this. */
+  unit?: number;
+  className?: string;
+}
+
 /** Deterministic barcode for a body digest: identical payloads draw identical codes. Sized by CSS. */
-export function Barcode({ digest }: { digest: string }) {
+export function Barcode({ digest, unit = 2, className }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -22,7 +38,6 @@ export function Barcode({ digest }: { digest: string }) {
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
     const runs = barcodeRuns(digest);
-    const total = runs.reduce((a, b) => a + b, 0);
     const draw = () => {
       const dpr = window.devicePixelRatio || 1;
       const w = Math.round(canvas.clientWidth * dpr);
@@ -31,25 +46,28 @@ export function Barcode({ digest }: { digest: string }) {
       canvas.width = w;
       canvas.height = h;
       ctx.fillStyle = "#fff";
-      let units = 0;
+      // Left-aligned at a fixed unit; whatever exceeds the box is clipped, never squeezed.
+      const u = Math.max(1, Math.round(unit * dpr));
+      let x = 0;
       runs.forEach((run, i) => {
-        // Snap both edges to device pixels so every bar is crisp.
-        const x0 = Math.round((units * w) / total);
-        units += run;
-        const x1 = Math.round((units * w) / total);
-        if (i % 2 === 0) ctx.fillRect(x0, 0, Math.max(1, x1 - x0), h);
+        if (i % 2 === 0) ctx.fillRect(x, 0, run * u, h);
+        x += run * u;
       });
     };
     draw();
-    const ro = new ResizeObserver(draw);
+    redraws.set(canvas, draw);
+    const ro = sharedObserver();
     try {
       // Also fires when devicePixelRatio changes (zoom), keeping bars crisp.
       ro.observe(canvas, { box: "device-pixel-content-box" });
     } catch {
       ro.observe(canvas);
     }
-    return () => ro.disconnect();
-  }, [digest]);
+    return () => {
+      ro.unobserve(canvas);
+      redraws.delete(canvas);
+    };
+  }, [digest, unit]);
 
-  return <canvas ref={ref} className={styles.code} aria-hidden="true" />;
+  return <canvas ref={ref} className={`${styles.code}${className ? ` ${className}` : ""}`} aria-hidden="true" />;
 }

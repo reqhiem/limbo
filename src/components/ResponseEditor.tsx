@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useEffect, useId, useRef } from "react";
 import { MAX_STATUS, MIN_STATUS } from "../../shared/endpoint";
 import type { KV, ResponseConfig } from "../../shared/types";
 import { IconClose, IconPlus } from "./icons";
@@ -33,6 +33,19 @@ export function ResponseEditor({ value, onChange, error = null }: Props) {
   const set = (patch: Partial<ResponseConfig>) => onChange({ ...value, ...patch });
   const setHeader = (i: number, kv: KV) => set({ headers: value.headers.map((h, j) => (j === i ? kv : h)) });
   const badStatus = !statusValid(value.status);
+  const headersRef = useRef<HTMLFieldSetElement>(null);
+  const addRef = useRef<HTMLButtonElement>(null);
+  const focusAfterRemove = useRef<number | null>(null);
+
+  // After a row is removed, focus the row that took its place (or the one above, or "Add header").
+  useEffect(() => {
+    const i = focusAfterRemove.current;
+    if (i === null) return;
+    focusAfterRemove.current = null;
+    const rows = headersRef.current?.querySelectorAll<HTMLElement>("[data-header-row]") ?? [];
+    const row = rows[Math.min(i, rows.length - 1)];
+    (row?.querySelector("input") ?? addRef.current)?.focus();
+  }, [value.headers.length]);
 
   return (
     <div className={styles.editor}>
@@ -90,13 +103,13 @@ export function ResponseEditor({ value, onChange, error = null }: Props) {
         />
       </div>
 
-      <fieldset className={styles.headers}>
+      <fieldset ref={headersRef} className={styles.headers}>
         <legend className="label">Extra headers · {value.headers.length}</legend>
         {value.headers.map(([k, v], i) => {
           const rowError = error?.headerRow === i ? error.message : null;
           const errorId = `${id}-header-${i}-error`;
           return (
-            <div key={i} className={styles.headerGroup}>
+            <div key={i} className={styles.headerGroup} data-header-row>
               <div className={styles.headerRow}>
                 <input
                   aria-label={`Header ${i + 1} name`}
@@ -120,14 +133,17 @@ export function ResponseEditor({ value, onChange, error = null }: Props) {
                   type="button"
                   className="btn"
                   aria-label={`Remove header ${i + 1}`}
-                  onClick={() => set({ headers: value.headers.filter((_, j) => j !== i) })}
+                  onClick={() => {
+                    focusAfterRemove.current = i;
+                    set({ headers: value.headers.filter((_, j) => j !== i) });
+                  }}
                 >
                   <IconClose />
                 </button>
               </div>
               {rowError && (
                 <p id={errorId} className={styles.rowError} role="alert">
-                  <span className="badge">ERR</span> {rowError}
+                  <span className="badge solid">ERR</span> {rowError}
                 </p>
               )}
             </div>
@@ -135,6 +151,7 @@ export function ResponseEditor({ value, onChange, error = null }: Props) {
         })}
         <div>
           <button
+            ref={addRef}
             type="button"
             className="btn small"
             onClick={() => set({ headers: [...value.headers, ["", ""]] })}

@@ -1,3 +1,9 @@
+/*
+ * Panes. >= 1280px: endpoints | requests | detail.
+ * 900-1279px: the endpoint column folds into a switcher; one side slot shows the endpoint list
+ * on `#/` and the request list otherwise, next to the detail.
+ * < 900px: one pane at a time, chosen by the route (data-pane).
+ */
 .app {
   display: grid;
   grid-template-columns: var(--col-endpoints) var(--col-requests) minmax(0, 1fr);
@@ -7,12 +13,18 @@
     "endpoints requests detail";
   height: 100vh;
   height: 100dvh;
-  min-width: 960px;
-  overflow: hidden;
+}
+
+.endpoints {
+  grid-area: endpoints;
 }
 
 .requests {
   grid-area: requests;
+}
+
+.placeholder {
+  min-width: 0;
   min-height: 0;
   overflow-y: auto;
   border-right: var(--rule);
@@ -23,4 +35,62 @@
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
+  container-type: inline-size;
+}
+
+/* Home at full width: orientation takes both right columns instead of an empty list column. */
+@media (min-width: 1280px) {
+  .app[data-pane="endpoints"] .placeholder {
+    display: none;
+  }
+
+  .app[data-pane="endpoints"] .detail {
+    grid-column: requests / detail;
+  }
+}
+
+.link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 1279px) {
+  .app {
+    grid-template-columns: minmax(320px, 40%) minmax(0, 1fr);
+    grid-template-areas:
+      "header header"
+      "side detail";
+  }
+
+  .endpoints,
+  .requests {
+    grid-area: side;
+  }
+
+  .app[data-pane="endpoints"] .requests,
+  .app:not([data-pane="endpoints"]) .endpoints {
+    display: none;
+  }
+}
+
+@media (max-width: 899px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "header"
+      "pane";
+  }
+
+  .endpoints,
+  .requests,
+  .detail {
+    grid-area: pane;
+    border-right: 0;
+  }
+
+  .app:not([data-pane="endpoints"]) .endpoints,
+  .app:not([data-pane="requests"]) .requests,
+  .app:not([data-pane="detail"]) .detail {
+    display: none;
+  }
 }

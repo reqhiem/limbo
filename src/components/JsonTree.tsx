@@ -3,15 +3,20 @@ import { JsonNumber } from "../lib/body";
 import { IconChevron } from "./icons";
 import styles from "./JsonTree.module.css";
 
+const PAGE = 200;
+const OPEN_MAX_DEPTH = 3;
+const OPEN_MAX_CHILDREN = 50;
+
 const isContainer = (v: unknown): v is Record<string, unknown> | unknown[] =>
   v !== null && typeof v === "object" && !(v instanceof JsonNumber);
 
 const scalar = (v: unknown) => (v instanceof JsonNumber ? v.source : JSON.stringify(v));
 
-export function JsonTree({ value }: { value: unknown }) {
+/** `small`: body ≤ 64 KiB. Large bodies open only the root; everything else expands on demand. */
+export function JsonTree({ value, small }: { value: unknown; small: boolean }) {
   return (
     <div className={styles.tree}>
-      <Node name={null} value={value} depth={0} comma={false} />
+      <Node name={null} value={value} depth={0} comma={false} small={small} />
     </div>
   );
 }
@@ -21,38 +26,46 @@ interface NodeProps {
   value: unknown;
   depth: number;
   comma: boolean;
+  small: boolean;
 }
 
 function Key({ name }: { name: NodeProps["name"] }) {
   if (name === null) return null;
-  if (typeof name === "number") return <span className={styles.index}>{name}: </span>;
   return (
-    <>
-      <span className={styles.key}>{JSON.stringify(name)}</span>
-      <span className={styles.punct}>: </span>
-    </>
+    <span className={styles.key}>
+      {typeof name === "number" ? name : JSON.stringify(name)}
+      {": "}
+    </span>
   );
 }
 
 const Comma = ({ show }: { show: boolean }) => (show ? <span className={styles.punct}>,</span> : null);
 
-function Node({ name, value, depth, comma }: NodeProps) {
-  // Children render only while open; depth 0 and 1 start open.
-  const [open, setOpen] = useState(depth < 2);
+function Node({ name, value, depth, comma, small }: NodeProps) {
+  const container = isContainer(value);
+  const entries: [string | number, unknown][] = !container
+    ? []
+    : Array.isArray(value)
+      ? value.map((v, i) => [i, v])
+      : Object.entries(value);
+  // Children render only while open.
+  const [open, setOpen] = useState(
+    depth === 0 || (small && depth < OPEN_MAX_DEPTH && entries.length <= OPEN_MAX_CHILDREN),
+  );
+  const [limit, setLimit] = useState(PAGE);
   const indent = { paddingInlineStart: `${depth * 2}ch` };
 
-  if (!isContainer(value)) {
+  if (!container) {
     return (
       <div className={styles.line} style={indent}>
         <Key name={name} />
-        <span className={styles.value}>{scalar(value)}</span>
+        <span>{scalar(value)}</span>
         <Comma show={comma} />
       </div>
     );
   }
 
   const isArray = Array.isArray(value);
-  const entries: [string | number, unknown][] = isArray ? value.map((v, i) => [i, v]) : Object.entries(value);
   const [openCh, closeCh] = isArray ? ["[", "]"] : ["{", "}"];
 
   if (entries.length === 0) {
@@ -65,16 +78,13 @@ function Node({ name, value, depth, comma }: NodeProps) {
     );
   }
 
-  const count = `${entries.length} ${isArray ? (entries.length === 1 ? "item" : "items") : entries.length === 1 ? "key" : "keys"}`;
+  const n = entries.length;
+  const count = `${n} ${isArray ? (n === 1 ? "item" : "items") : n === 1 ? "key" : "keys"}`;
+  const rest = n - limit;
   return (
     <>
       <div className={styles.line} style={indent}>
-        <button
-          type="button"
-          className={styles.toggle}
-          aria-expanded={open}
-          onClick={() => setOpen((o) => !o)}
-        >
+        <button type="button" className={styles.toggle} aria-expanded={open} onClick={() => setOpen((o) => !o)}>
           <IconChevron className={open ? styles.open : undefined} />
           <Key name={name} />
           <span className={styles.punct}>{openCh}</span>
@@ -89,9 +99,16 @@ function Node({ name, value, depth, comma }: NodeProps) {
       </div>
       {open && (
         <>
-          {entries.map(([k, v], i) => (
-            <Node key={k} name={k} value={v} depth={depth + 1} comma={i < entries.length - 1} />
+          {entries.slice(0, limit).map(([k, v], i) => (
+            <Node key={k} name={k} value={v} depth={depth + 1} comma={i < n - 1} small={small} />
           ))}
+          {rest > 0 && (
+            <div className={styles.line} style={{ paddingInlineStart: `${(depth + 1) * 2}ch` }}>
+              <button type="button" className="btn small" onClick={() => setLimit((l) => l + PAGE)}>
+                Show {Math.min(PAGE, rest)} more · {rest} hidden
+              </button>
+            </div>
+          )}
           <div className={styles.line} style={indent}>
             <span className={styles.punct}>{closeCh}</span>
             <Comma show={comma} />

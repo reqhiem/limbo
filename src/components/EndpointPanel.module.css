@@ -2,8 +2,12 @@
   display: grid;
   align-content: start;
   gap: var(--space-5);
-  padding: var(--space-5);
+  padding: var(--space-5) var(--space-5) 7rem;
   max-width: 60rem;
+}
+
+.back {
+  justify-self: start;
 }
 
 .head {
@@ -38,6 +42,7 @@
   display: grid;
   gap: var(--space-3);
   padding: var(--space-4);
+  border: var(--rule);
 }
 
 .waitingTitle {
@@ -69,13 +74,13 @@
   overflow-wrap: anywhere;
 }
 
-.waiting .code {
-  border-color: var(--ground);
-}
-
+/* One line, never broken mid-slug; the full URL is in `title` and on the clipboard. */
 .url {
   font-size: var(--text-title);
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .form {
@@ -127,8 +132,18 @@
   letter-spacing: 0.04em;
 }
 
-@media (max-width: 1280px) {
+.dangerRow > div {
+  min-width: 0;
+}
+
+@container (max-width: 760px) {
   .panel {
-    padding: var(--space-4);
+    padding: var(--space-4) var(--space-4) 7rem;
+  }
+}
+
+@container (max-width: 480px) {
+  .dangerRow {
+    flex-wrap: wrap;
   }
 }
