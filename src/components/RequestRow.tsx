@@ -7,6 +7,19 @@ import styles from "./RequestRow.module.css";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
+// "payment_intent." + "succeeded": the head may shrink, the tail is what tells events apart.
+const LABEL_SPLIT = /^(.*[.:/])([^.:/]+)$/;
+
+function EventLabel({ label }: { label: string }) {
+  const m = LABEL_SPLIT.exec(label);
+  return (
+    <span className={styles.event} title={label}>
+      {m && <span className={styles.head}>{m[1]}</span>}
+      <span className={styles.tail}>{m ? m[2] : label}</span>
+    </span>
+  );
+}
+
 interface Props {
   request: RequestSummary;
   selected: boolean;
@@ -19,6 +32,8 @@ export const RequestRow = memo(function RequestRow({ request: r, selected, unsee
     .filter(Boolean)
     .join(" ");
   const target = `${r.path || "/"}${r.search}`;
+  // Rendered in line 2 at >= 1280px and in the time/size stack below; CSS shows exactly one.
+  const ip = r.ip ?? "no ip";
   return (
     <a href={hrefFor(r.slug, r.id)} className={cls} aria-current={selected ? "true" : undefined}>
       <span className={styles.main}>
@@ -31,15 +46,16 @@ export const RequestRow = memo(function RequestRow({ request: r, selected, unsee
               {r.responseStatus}
             </span>
           )}
-          {r.label && <span className={styles.event}>{r.label}</span>}
-          {r.label && <span className={styles.sep}>·</span>}
-          <span className={styles.ip}>{r.ip ?? "no ip"}</span>
+          {r.label && <EventLabel label={r.label} />}
+          {r.label && <span className={`${styles.sep} ${styles.wideOnly}`}>·</span>}
+          <span className={`${styles.ip} ${styles.wideOnly}`}>{ip}</span>
         </span>
       </span>
       <Barcode digest={r.digest} />
       <span className={styles.when}>
         <span title={`${formatDate(r.receivedAt)} ${formatClock(r.receivedAt, true)}`}>{formatClock(r.receivedAt)}</span>
         <span>{formatBytes(r.size)}</span>
+        <span className={`${styles.ip} ${styles.narrowOnly}`}>{ip}</span>
       </span>
       {unseen && <span className="visually-hidden">, new</span>}
     </a>

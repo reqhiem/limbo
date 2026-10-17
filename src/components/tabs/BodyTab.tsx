@@ -107,7 +107,9 @@ export function BodyTab({ req }: { req: CapturedRequest }) {
       content = (
         <>
           <div className={styles.toolbar}>
-            <span className="label">Form · {formatInt(view.pairs.length)} fields</span>
+            <span className="label">
+              Form · {formatInt(view.pairs.length)} {view.pairs.length === 1 ? "field" : "fields"}
+            </span>
             <Toggle options={["Table", "Raw"]} value={mode} onChange={setMode} />
           </div>
           {mode === "Raw" ? (

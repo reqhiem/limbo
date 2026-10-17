@@ -69,6 +69,61 @@
   flex: none;
 }
 
+.narrowOnly {
+  display: none;
+}
+
+/*
+ * Below 1280px the list is narrower: the IP moves into the time/size stack and the label gets
+ * line 2 to itself. If it still overflows, the head ellipsizes and the tail (the part that tells
+ * payment_intent.succeeded from payment_intent.payment_failed) stays whole.
+ */
+@media (max-width: 1279px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) 96px 7.5em;
+    height: auto;
+    min-height: var(--row-h);
+    padding-block: 4px;
+  }
+
+  .wideOnly {
+    display: none;
+  }
+
+  .narrowOnly {
+    display: block;
+  }
+
+  .when .ip {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    text-align: right;
+  }
+
+  .event {
+    display: flex;
+    min-width: 0;
+  }
+
+  .head {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tail {
+    flex: none;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .when {
+    line-height: 1.35;
+  }
+}
+
 .when {
   display: grid;
   justify-items: end;
@@ -117,8 +172,8 @@
 
 @media (max-width: 600px) {
   .row {
-    grid-template-columns: minmax(0, 1fr) 72px 4.5em;
+    grid-template-columns: minmax(0, 1fr) 72px 7em;
     gap: var(--space-2);
-    padding: 0 var(--space-3);
+    padding: 4px var(--space-3);
   }
 }
