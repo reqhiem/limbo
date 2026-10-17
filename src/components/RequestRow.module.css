@@ -46,10 +46,10 @@
 
 .status {
   flex: none;
-  height: 15px;
+  height: 16px;
   padding: 0 4px;
   align-self: center;
-  font-size: 10px;
+  font-size: var(--text-label);
   vertical-align: 1px;
 }
 
