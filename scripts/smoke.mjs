@@ -140,6 +140,12 @@ check("PATCH content-length header -> 400", (await badResp({ headers: [["Content
 check("PATCH header value with newline -> 400", (await badResp({ headers: [["X-A", "a\nb"]] })).status === 400);
 check("PATCH bad header name -> 400", (await badResp({ headers: [["Bad Name", "a"]] })).status === 400);
 check("PATCH Set-Cookie -> 400", (await badResp({ headers: [["Set-Cookie", "a=b"]] })).status === 400);
+check("PATCH Clear-Site-Data -> 400", (await badResp({ headers: [["Clear-Site-Data", '"cookies"']] })).status === 400);
+check("PATCH Content-Type as extra header -> 400", (await badResp({ headers: [["Content-Type", "text/html"]] })).status === 400);
+const textPlain = await fetch(`${base}/api/endpoints`, { method: "POST", headers: { "content-type": "text/plain" }, body: "{}" });
+check("API JSON body with text/plain -> 415", textPlain.status === 415, textPlain.status);
+const crossSite = await fetch(`${base}/api/endpoints`, { headers: { origin: "https://evil.example" } });
+check("API cross-origin request -> 403", crossSite.status === 403, crossSite.status);
 check("PATCH unknown endpoint -> 404", (await api("PATCH", "/endpoints/no-such-endpoint", {})).status === 404);
 
 const head = await hook(slug, "", { method: "HEAD" });
@@ -179,6 +185,23 @@ await hook(slug, "/euro", { method: "POST", body: euro });
 const dEuro = await detail(slug, (await latest(slug))?.id);
 check("truncation trims a split UTF-8 char", dEuro?.bodyEncoding === "utf8" && dEuro?.truncated === true && Buffer.byteLength(dEuro.body) === 1_048_575, { enc: dEuro?.bodyEncoding, bytes: dEuro && Buffer.byteLength(dEuro.body) });
 check("trimmed digest covers trimmed bytes", dEuro?.digest === digestOf(euro.subarray(0, 1_048_575)), dEuro?.digest);
+
+// Text up to the cut, then an invalid UTF-8 byte right at it: binary, nothing dropped.
+const textThenJunk = Buffer.concat([Buffer.alloc(1_048_575, "a"), Buffer.from([0xff]), Buffer.alloc(1024, "b")]);
+await hook(slug, "/junk", { method: "POST", body: textThenJunk });
+const dJunk = await detail(slug, (await latest(slug))?.id);
+check("invalid byte at the cut stays binary, nothing trimmed", dJunk?.bodyEncoding === "base64" && Buffer.from(dJunk.body, "base64").length === 1_048_576, { enc: dJunk?.bodyEncoding });
+
+// Chunked upload (no Content-Length): the stream is drained to learn the original size.
+const chunked = new ReadableStream({
+  start(c) {
+    for (let i = 0; i < 24; i++) c.enqueue(new Uint8Array(65_536).fill(0x41));
+    c.close();
+  },
+});
+await hook(slug, "/chunked", { method: "POST", body: chunked, duplex: "half" });
+const sChunked = await latest(slug);
+check("chunked 1.5 MB upload: original size kept", sChunked?.path === "/chunked" && sChunked?.size === 1_572_864, { path: sChunked?.path, size: sChunked?.size });
 
 // --- WebSocket ---------------------------------------------------------------
 const nonUpgrade = await api("GET", "/ws");

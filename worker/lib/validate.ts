@@ -12,13 +12,20 @@ const FORBIDDEN_HEADERS = new Set([
   "te",
   "trailer",
   "proxy-connection",
-  // Ingress shares the UI's origin; a configured cookie could clobber the Access session.
+  // Ingress shares the UI's origin: nothing that acts on the whole origin (cookies, storage, service workers).
   "set-cookie",
+  "clear-site-data",
+  "service-worker-allowed",
+  // Set through response.contentType instead.
+  "content-type",
 ]);
 
 const bad = (message: string) => new HTTPException(400, { message });
 
 export async function readJson(req: Request): Promise<unknown> {
+  if (!req.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    throw new HTTPException(415, { message: "content-type must be application/json" });
+  }
   try {
     return await req.json();
   } catch {
@@ -84,6 +91,7 @@ function parseHeader(pair: unknown, i: number): KV {
     throw bad(`response.headers[${i}] must be a [name, value] pair of strings`);
   }
   const [name, value] = pair as [string, string];
+  if (name.length > 256 || value.length > 8192) throw bad(`response.headers[${i}] is too long`);
   if (!HEADER_NAME_RE.test(name)) throw bad(`response.headers[${i}] has an invalid header name`);
   if (FORBIDDEN_HEADERS.has(name.toLowerCase())) throw bad(`response.headers[${i}]: "${name}" cannot be set`);
   if (!isValidHeader(name, value)) throw bad(`response.headers[${i}] has an invalid header value`);

@@ -58,7 +58,10 @@ export async function buildCapture(req: Request, slug: string, path: string, max
   };
 }
 
-/** Keeps at most `max` bytes but drains the whole stream to learn the original size. */
+/**
+ * Keeps at most `max` bytes but drains the whole stream to learn the original size. Draining
+ * (instead of cancelling) lets the sender finish its upload and read our response cleanly.
+ */
 async function readCapped(stream: ReadableStream<Uint8Array> | null, max: number): Promise<{ bytes: Uint8Array; size: number }> {
   const chunks: Uint8Array[] = [];
   let kept = 0;
@@ -85,25 +88,19 @@ async function readCapped(stream: ReadableStream<Uint8Array> | null, max: number
   return { bytes, size };
 }
 
+/**
+ * UTF-8 when the bytes decode cleanly, else base64. For a truncated body, streaming mode lets a
+ * *valid* multi-byte prefix cut at the boundary through (it is dropped from the stored bytes),
+ * while any invalid byte still fails and keeps the body binary.
+ */
 function classify(bytes: Uint8Array, truncated: boolean): { body: Uint8Array; bodyEncoding: BodyEncoding } {
-  const candidate = truncated ? trimPartialUtf8(bytes) : bytes;
   try {
-    utf8Decoder.decode(candidate);
-    return { body: candidate, bodyEncoding: "utf8" };
+    const text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes, { stream: truncated });
+    const body = truncated ? bytes.subarray(0, new TextEncoder().encode(text).byteLength) : bytes;
+    return { body, bodyEncoding: "utf8" };
   } catch {
     return { body: bytes, bodyEncoding: "base64" };
   }
-}
-
-/** Drops a multi-byte sequence cut off by truncation (at most 3 bytes). */
-function trimPartialUtf8(bytes: Uint8Array): Uint8Array {
-  for (let i = bytes.length - 1; i >= 0 && i >= bytes.length - 4; i--) {
-    const b = bytes[i]!;
-    if ((b & 0xc0) === 0x80) continue;
-    const need = b >= 0xf0 ? 4 : b >= 0xe0 ? 3 : b >= 0xc0 ? 2 : 1;
-    return bytes.length - i < need ? bytes.subarray(0, i) : bytes;
-  }
-  return bytes;
 }
 
 function pickCf(cf: Record<string, unknown> | undefined): CfMeta {

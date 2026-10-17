@@ -10,10 +10,10 @@ export const access = createMiddleware<{ Bindings: Env }>(async (c, next) => {
   if (c.env.DEV_SKIP_ACCESS === "true" && (hostname === "localhost" || hostname === "127.0.0.1")) {
     return next();
   }
-  const team = c.env.ACCESS_TEAM_DOMAIN.replace(/\/+$/, "");
-  const audience: string = c.env.ACCESS_AUD;
   const token = c.req.header("cf-access-jwt-assertion");
   try {
+    const team = (c.env.ACCESS_TEAM_DOMAIN ?? "").replace(/\/+$/, "");
+    const audience: string = c.env.ACCESS_AUD ?? "";
     if (!token || !team || !audience) throw new Error("missing token or Access config");
     let jwks = jwksByTeam.get(team);
     if (!jwks) {
@@ -24,5 +24,16 @@ export const access = createMiddleware<{ Bindings: Env }>(async (c, next) => {
   } catch {
     return c.json({ error: "unauthorized" }, 401);
   }
+  return next();
+});
+
+/**
+ * Rejects cross-origin browser requests (CSRF / cross-site WebSocket hijacking), including
+ * against a local dev server running with the Access bypass. Same-origin requests and
+ * non-browser clients without an Origin header pass.
+ */
+export const sameOrigin = createMiddleware<{ Bindings: Env }>(async (c, next) => {
+  const origin = c.req.header("origin");
+  if (origin && origin !== new URL(c.req.url).origin) return c.json({ error: "cross-origin request" }, 403);
   return next();
 });

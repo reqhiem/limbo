@@ -22,6 +22,9 @@ import {
   type SummaryRow,
 } from "./rows";
 
+// ponytail: body search only scans the first 64 KiB of each body, so a filter over 500 x 1 MiB bodies stays cheap.
+const SEARCH_BODY_BYTES = 65_536;
+
 export function getStore(env: Env) {
   return env.STORE.getByName("limbo");
 }
@@ -167,7 +170,7 @@ export class LimboStore extends DurableObject<Env> {
       ? this.sql.exec<SummaryRow>(
           `SELECT ${SUMMARY_COLUMNS} FROM requests
            WHERE slug = ? AND (instr(lower(method), ?) > 0 OR instr(lower(path), ?) > 0
-             OR (body_encoding = 'utf8' AND instr(lower(CAST(body AS TEXT)), ?) > 0))
+             OR (body_encoding = 'utf8' AND instr(lower(CAST(substr(body, 1, ${SEARCH_BODY_BYTES}) AS TEXT)), ?) > 0))
            ORDER BY id DESC`,
           slug,
           needle,
@@ -212,9 +215,7 @@ export class LimboStore extends DurableObject<Env> {
       for (const { slug, request_count } of endpoints) {
         let count = request_count;
         // A bare 10-char time prefix sorts before every id with that same prefix.
-        if (this.sql.exec("DELETE FROM requests WHERE slug = ? AND id < ?", slug, cutoff).rowsWritten > 0) {
-          count = this.sql.exec<{ n: number }>("SELECT COUNT(*) AS n FROM requests WHERE slug = ?", slug).one().n;
-        }
+        count = Math.max(0, count - this.sql.exec("DELETE FROM requests WHERE slug = ? AND id < ?", slug, cutoff).rowsWritten);
         if (count > maxRequests) {
           this.deleteOldest(slug, count - maxRequests);
           count = maxRequests;
@@ -260,9 +261,14 @@ export class LimboStore extends DurableObject<Env> {
   /** Arms the retention alarm at most once per instance lifetime (setAlarm counts as a write). */
   private async ensureAlarm(): Promise<void> {
     if (this.alarmChecked) return;
-    this.alarmChecked = true;
-    if ((await this.ctx.storage.getAlarm()) === null) {
-      await this.ctx.storage.setAlarm(Date.now() + this.alarmInterval());
+    try {
+      if ((await this.ctx.storage.getAlarm()) === null) {
+        await this.ctx.storage.setAlarm(Date.now() + this.alarmInterval());
+      }
+      this.alarmChecked = true;
+    } catch (err) {
+      // The request is already stored; retry arming on the next capture instead of failing this one.
+      console.error("failed to arm retention alarm", err);
     }
   }
 

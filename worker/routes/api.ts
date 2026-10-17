@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ApiError } from "../../shared/types";
 import { parseCreateEndpoint, parseUpdateEndpoint, readJson } from "../lib/validate";
-import { access } from "../middleware/access";
+import { access, sameOrigin } from "../middleware/access";
 import { getStore } from "../store/LimboStore";
 
 export const api = new Hono<{ Bindings: Env }>();
@@ -15,7 +15,7 @@ api.onError((err, c) => {
   return c.json({ error: "internal error" } satisfies ApiError, 500);
 });
 
-api.use("*", access);
+api.use("*", sameOrigin, access);
 
 api.get("/ws", async (c) => {
   if (c.req.header("upgrade")?.toLowerCase() !== "websocket") {
