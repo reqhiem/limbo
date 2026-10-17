@@ -1,0 +1,308 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-17T16:44:02.499Z",
+  "title": "Design System: Limbo",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Signal White",
+        "canonical": "#fff",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "note": "Display only. The system uses exactly two inks and one 62% tier; never apply intermediate steps."
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Field Black",
+        "canonical": "#000",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "note": "Display only. The system uses exactly two inks and one 62% tier; never apply intermediate steps."
+      },
+      "label": {
+        "role": "neutral",
+        "displayName": "Label Grey-by-Alpha",
+        "canonical": "rgb(255 255 255 / 0.62)",
+        "tonalRamp": [
+          "rgb(255 255 255 / 0.15)",
+          "rgb(255 255 255 / 0.26)",
+          "rgb(255 255 255 / 0.38)",
+          "rgb(255 255 255 / 0.49)",
+          "rgb(255 255 255 / 0.61)",
+          "rgb(255 255 255 / 0.72)",
+          "rgb(255 255 255 / 0.84)",
+          "rgb(255 255 255 / 0.95)"
+        ],
+        "note": "Display only. The system uses exactly two inks and one 62% tier; never apply intermediate steps."
+      },
+      "label-inverse": {
+        "role": "neutral",
+        "displayName": "Label Inverse",
+        "canonical": "rgb(0 0 0 / 0.62)",
+        "tonalRamp": [
+          "rgb(0 0 0 / 0.15)",
+          "rgb(0 0 0 / 0.26)",
+          "rgb(0 0 0 / 0.38)",
+          "rgb(0 0 0 / 0.49)",
+          "rgb(0 0 0 / 0.61)",
+          "rgb(0 0 0 / 0.72)",
+          "rgb(0 0 0 / 0.84)",
+          "rgb(0 0 0 / 0.95)"
+        ],
+        "note": "Display only. The system uses exactly two inks and one 62% tier; never apply intermediate steps."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Request line, endpoint title, orientation title; condensed 800."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Column-head endpoint name, switcher summary, waiting card; uppercase 0.04em."
+      },
+      "name": {
+        "displayName": "Name",
+        "purpose": "Endpoint names in lists and menus, danger-row titles; uppercase 0.04em."
+      },
+      "body": {
+        "displayName": "Body / Data",
+        "purpose": "All captured data and running text; tabular, slashed zero."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels, dt terms, column headings; uppercase at the 62% tier."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Button text in full ink; tabs, badges, live state and subheads step to 700."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "LIMBO in the header only; the one expanded setting."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "flash",
+        "value": "120ms steps(1)",
+        "purpose": "Arrival: a new row (and its barcode) inverts for one frame, then snaps back. Token --flash."
+      },
+      {
+        "name": "blink",
+        "value": "1s steps(1) infinite",
+        "purpose": "Connecting lamp only."
+      },
+      {
+        "name": "trace-step",
+        "value": "1 of 16 discrete phase steps per arrival",
+        "purpose": "Header sine trace advances on each arrival; frozen at phase 0 under reduced motion."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation: none",
+        "purpose": "All animation off; only the unseen 1px inset outline remains."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "narrow",
+        "value": "600px",
+        "purpose": "Below: sine trace hidden, rows tighten to a 72px barcode column."
+      },
+      {
+        "name": "compact",
+        "value": "760px",
+        "purpose": "Below: header counters drop."
+      },
+      {
+        "name": "two-column",
+        "value": "900px",
+        "purpose": "Below: one route-driven pane."
+      },
+      {
+        "name": "wide",
+        "value": "1280px",
+        "purpose": "At and above: three ruled columns (248px | 460px | 1fr)."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Ruled ground block with uppercase control type; hover, press, current and copied all invert. Disabled goes dotted at the label tier.",
+      "html": "<div style=\"display:flex;gap:8px;flex-wrap:wrap\"><button class=\"ds-btn\"><svg viewBox=\"0 0 16 16\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"square\" stroke-linejoin=\"miter\" aria-hidden=\"true\"><path d=\"M5.5 5.5h8v8h-8z M2.5 10.5v-8h8\"/></svg>Copy body</button><button class=\"ds-btn on\"><svg viewBox=\"0 0 16 16\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"square\" stroke-linejoin=\"miter\" aria-hidden=\"true\"><path d=\"M5.5 5.5h8v8h-8z M2.5 10.5v-8h8\"/></svg>Copied</button><button class=\"ds-btn\" disabled>Save</button></div>",
+      "css": ".ds-btn { font-family: var(--font, \"Martian Mono Variable\", ui-monospace, monospace); font-variant-numeric: tabular-nums slashed-zero; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 32px; padding: 0 12px; border: 1px solid var(--ink, #fff); border-radius: 0; background: var(--ground, #000); color: var(--ink, #fff); font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; cursor: pointer; } .ds-btn:hover, .ds-btn:active, .ds-btn[aria-pressed=\"true\"], .ds-btn.on { background: var(--ink, #fff); color: var(--ground, #000); } .ds-btn:focus-visible { outline: 2px solid var(--ink, #fff); outline-offset: 2px; } .ds-btn:disabled, .ds-btn:disabled:hover { background: var(--ground, #000); color: var(--label, rgb(255 255 255 / 0.62)); border-style: dotted; cursor: not-allowed; } .ds-btn.small { height: 24px; padding: 0 8px; }"
+    },
+    {
+      "name": "Small Button and Segmented Toggle",
+      "kind": "button",
+      "refersTo": "button-small",
+      "description": "24px buttons for column heads, action rows and toolbars; adjoining toggles share a border and the pressed one inverts.",
+      "html": "<div class=\"ds-toggle\"><button class=\"ds-btn small\" aria-pressed=\"true\">Tree</button><button class=\"ds-btn small\" aria-pressed=\"false\">Raw</button></div>",
+      "css": ".ds-btn { font-family: var(--font, \"Martian Mono Variable\", ui-monospace, monospace); font-variant-numeric: tabular-nums slashed-zero; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 32px; padding: 0 12px; border: 1px solid var(--ink, #fff); border-radius: 0; background: var(--ground, #000); color: var(--ink, #fff); font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; cursor: pointer; } .ds-btn:hover, .ds-btn:active, .ds-btn[aria-pressed=\"true\"], .ds-btn.on { background: var(--ink, #fff); color: var(--ground, #000); } .ds-btn:focus-visible { outline: 2px solid var(--ink, #fff); outline-offset: 2px; } .ds-btn:disabled, .ds-btn:disabled:hover { background: var(--ground, #000); color: var(--label, rgb(255 255 255 / 0.62)); border-style: dotted; cursor: not-allowed; } .ds-btn.small { height: 24px; padding: 0 8px; } .ds-toggle { display: flex; } .ds-toggle > .ds-btn + .ds-btn { border-left: 0; }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "32px ruled field on ground, label-tier label above; invalid thickens to 2px with an ERR line below.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-label\">Status</span><input class=\"ds-input\" value=\"200\"></label><label class=\"ds-field\"><span class=\"ds-label\">Slug · optional</span><input class=\"ds-input\" aria-invalid=\"true\" value=\"Stripe Test\"><span class=\"ds-err\"><span class=\"ds-badge solid\">ERR</span> Lowercase letters, digits and hyphens only</span></label>",
+      "css": ".ds-field { font-family: var(--font, \"Martian Mono Variable\", ui-monospace, monospace); font-variant-numeric: tabular-nums slashed-zero; display: grid; gap: 6px; margin-bottom: 16px; color: var(--ink, #fff); } .ds-label { font-size: 0.6875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--label, rgb(255 255 255 / 0.62)); } .ds-input { font-family: var(--font, \"Martian Mono Variable\", ui-monospace, monospace); font-variant-numeric: tabular-nums slashed-zero; height: 32px; padding: 0 8px; background: var(--ground, #000); color: var(--ink, #fff); border: 1px solid var(--ink, #fff); border-radius: 0; font-size: 0.8125rem; caret-color: var(--ink, #fff); } .ds-input::placeholder { color: var(--label, rgb(255 255 255 / 0.62)); } .ds-input:focus-visible { outline: 2px solid var(--ink, #fff); outline-offset: 1px; } .ds-input[aria-invalid=\"true\"] { border-width: 2px; } .ds-err { display: flex; align-items: baseline; gap: 8px; font-size: 0.6875rem; } .ds-badge { display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border: 1px solid currentColor; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; } .ds-badge.solid { border-color: var(--ink, #fff); background: var(--ink, #fff); color: var(--ground, #000); }"
+    },
+    {
+      "name": "Tabs",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "Five equal cells in one ruled strip; the active tab inverts, others show a dotted inset outline on hover; counts sit at the label tier.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab inv\" role=\"tab\" aria-selected=\"true\">Body</button><button class=\"ds-tab\" role=\"tab\">Headers <span class=\"ds-count\">12</span></button><button class=\"ds-tab\" role=\"tab\">Query <span class=\"ds-count\">0</span></button><button class=\"ds-tab\" role=\"tab\">Metadata</button><button class=\"ds-tab\" role=\"tab\">Raw</button></div>",
+      "css": ".ds-tabs { font-family: var(--font, \"Martian Mono Variable\", ui-monospace, monospace); font-variant-numeric: tabular-nums slashed-zero; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid var(--ink, #fff); color: var(--ink, #fff); background: var(--ground, #000); } .ds-tab { display: flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 0 8px; border: 0; background: var(--ground, #000); color: var(--ink, #fff); font: inherit; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; cursor: pointer; } .ds-tab + .ds-tab { border-left: 1px solid var(--ink, #fff); } .ds-tab:not(.inv):hover { outline: 1px dotted var(--ink, #fff); outline-offset: -4px; } .ds-tab:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; } .ds-tab.inv { --label: rgb(0 0 0 / 0.62); background: var(--ink, #fff); color: var(--ground, #000); } .ds-count { font-weight: 500; color: var(--label, rgb(255 255 255 / 0.62)); }"
+    },
+    {
+      "name": "Endpoint List Item",
+      "kind": "nav",
+      "refersTo": "endpoint-item",
+      "description": "Name, /h/slug with a zero-padded count, and last-seen time; dotted separators, dotted hover outline, the selected endpoint inverts.",
+      "html": "<ul class=\"ds-endpoints\"><li><a class=\"ds-ep inv\" href=\"#\"><span class=\"ds-ep-name\">Stripe test</span><span class=\"ds-ep-meta\"><span>/h/stripe-test</span><b>012</b></span><span class=\"ds-ep-last\"><span class=\"ds-label\">Last</span> 1m ago</span></a></li><li><a class=\"ds-ep\" href=\"#\"><span class=\"ds-ep-name\">GitHub app</span><span class=\"ds-ep-meta\"><span>/h/github-app</span><b>001</b></span><span class=\"ds-ep-last\"><span class=\"ds-label\">Last</span> 14m ago</span></a></li></ul>",
+      "css": ".ds-endpoints { font-family: var(--font, \"Martian Mono Variable\", ui-monospace, monospace); font-variant-numeric: tabular-nums slashed-zero; list-style: none; margin: 0; padding: 0; width: 248px; background: var(--ground, #000); color: var(--ink, #fff); font-size: 0.8125rem; border-right: 1px solid var(--ink, #fff); } .ds-endpoints > li { border-bottom: 1px dotted var(--ink, #fff); } .ds-ep { display: grid; gap: 2px; padding: 12px 16px; color: inherit; text-decoration: none; } .ds-ep:not(.inv):hover { outline: 1px dotted var(--ink, #fff); outline-offset: -4px; } .ds-ep:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; } .ds-ep.inv { --label: rgb(0 0 0 / 0.62); background: var(--ink, #fff); color: var(--ground, #000); } .ds-ep-name { font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; } .ds-ep-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 0.6875rem; } .ds-ep-meta b { font-weight: 700; } .ds-ep-last { font-size: 0.6875rem; } .ds-label { font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--label, rgb(255 255 255 / 0.62)); }"
+    },
+    {
+      "name": "Request Row",
+      "kind": "custom",
+      "refersTo": "request-row",
+      "description": "Signature arrival surface: weight-coded method and path, event label and IP, digest barcode, clock and size. Unseen rows hold a 1px inset outline; arrival inverts for one stepped 120ms frame; selected inverts.",
+      "html": "<ul class=\"ds-rows\"><li><a class=\"ds-row ds-unseen ds-arriving\" href=\"#\"><span class=\"ds-main\"><span class=\"ds-l1\"><b class=\"ds-mut\">POST</b> /webhook</span><span class=\"ds-l2\"><span class=\"ds-ev\">invoice.paid</span><span class=\"ds-sep\">·</span><span>127.0.0.1</span></span></span><svg class=\"ds-code\" viewBox=\"0 0 44 1\" width=\"88\" height=\"20\" preserveAspectRatio=\"none\" shape-rendering=\"crispEdges\" fill=\"currentColor\" aria-hidden=\"true\"><rect x=\"0\" width=\"3\" height=\"1\"/><rect x=\"4\" width=\"1\" height=\"1\"/><rect x=\"6\" width=\"1\" height=\"1\"/><rect x=\"8\" width=\"1\" height=\"1\"/><rect x=\"10\" width=\"1\" height=\"1\"/><rect x=\"12\" width=\"1\" height=\"1\"/><rect x=\"14\" width=\"1\" height=\"1\"/><rect x=\"16\" width=\"3\" height=\"1\"/><rect x=\"22\" width=\"1\" height=\"1\"/><rect x=\"26\" width=\"1\" height=\"1\"/><rect x=\"29\" width=\"2\" height=\"1\"/><rect x=\"32\" width=\"1\" height=\"1\"/><rect x=\"34\" width=\"1\" height=\"1\"/><rect x=\"36\" width=\"2\" height=\"1\"/><rect x=\"39\" width=\"1\" height=\"1\"/><rect x=\"42\" width=\"1\" height=\"1\"/></svg><span class=\"ds-when\"><span>13:33:50</span><span>29 B</span></span></a></li><li><a class=\"ds-row\" href=\"#\"><span class=\"ds-main\"><span class=\"ds-l1\"><span class=\"ds-safe\">GET</span> /health?probe=1</span><span class=\"ds-l2\"><span class=\"ds-badge\">502</span><span>127.0.0.1</span></span></span><svg class=\"ds-code\" viewBox=\"0 0 44 1\" width=\"88\" height=\"20\" preserveAspectRatio=\"none\" shape-rendering=\"crispEdges\" fill=\"currentColor\" aria-hidden=\"true\"><rect x=\"0\" width=\"3\" height=\"1\"/><rect x=\"4\" width=\"1\" height=\"1\"/><rect x=\"6\" width=\"1\" height=\"1\"/><rect x=\"8\" width=\"1\" height=\"1\"/><rect x=\"10\" width=\"1\" height=\"1\"/><rect x=\"12\" width=\"1\" height=\"1\"/><rect x=\"14\" width=\"1\" height=\"1\"/><rect x=\"16\" width=\"3\" height=\"1\"/><rect x=\"22\" width=\"1\" height=\"1\"/><rect x=\"26\" width=\"1\" height=\"1\"/><rect x=\"29\" width=\"2\" height=\"1\"/><rect x=\"32\" width=\"1\" height=\"1\"/><rect x=\"34\" width=\"1\" height=\"1\"/><rect x=\"36\" width=\"2\" height=\"1\"/><rect x=\"39\" width=\"1\" height=\"1\"/><rect x=\"42\" width=\"1\" height=\"1\"/></svg><span class=\"ds-when\"><span>13:20:44</span><span>0 B</span></span></a></li><li><a class=\"ds-row inv\" href=\"#\" aria-current=\"true\"><span class=\"ds-main\"><span class=\"ds-l1\"><b class=\"ds-mut\">POST</b> /webhook</span><span class=\"ds-l2\"><span class=\"ds-ev\">payment_intent.succeeded</span><span class=\"ds-sep\">·</span><span>127.0.0.1</span></span></span><svg class=\"ds-code\" viewBox=\"0 0 44 1\" width=\"88\" height=\"20\" preserveAspectRatio=\"none\" shape-rendering=\"crispEdges\" fill=\"currentColor\" aria-hidden=\"true\"><rect x=\"0\" width=\"3\" height=\"1\"/><rect x=\"4\" width=\"1\" height=\"1\"/><rect x=\"6\" width=\"1\" height=\"1\"/><rect x=\"8\" width=\"1\" height=\"1\"/><rect x=\"10\" width=\"1\" height=\"1\"/><rect x=\"12\" width=\"1\" height=\"1\"/><rect x=\"14\" width=\"1\" height=\"1\"/><rect x=\"16\" width=\"3\" height=\"1\"/><rect x=\"22\" width=\"1\" height=\"1\"/><rect x=\"26\" width=\"1\" height=\"1\"/><rect x=\"29\" width=\"2\" height=\"1\"/><rect x=\"32\" width=\"1\" height=\"1\"/><rect x=\"34\" width=\"1\" height=\"1\"/><rect x=\"36\" width=\"2\" height=\"1\"/><rect x=\"39\" width=\"1\" height=\"1\"/><rect x=\"42\" width=\"1\" height=\"1\"/></svg><span class=\"ds-when\"><span>13:20:44</span><span>324 B</span></span></a></li></ul>",
+      "css": ".ds-rows { font-family: var(--font, \"Martian Mono Variable\", ui-monospace, monospace); font-variant-numeric: tabular-nums slashed-zero; list-style: none; margin: 0; padding: 0; width: 460px; background: var(--ground, #000); color: var(--ink, #fff); font-size: 0.8125rem; } .ds-rows > li { border-bottom: 1px dotted var(--ink, #fff); } .ds-row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 120px 4.75em; align-items: center; gap: 12px; height: 52px; padding: 0 16px; color: inherit; text-decoration: none; } .ds-row:not(.inv):hover { outline: 1px dotted var(--ink, #fff); outline-offset: -4px; } .ds-row:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; } .ds-row.inv { --label: rgb(0 0 0 / 0.62); background: var(--ink, #fff); color: var(--ground, #000); } .ds-main { display: grid; min-width: 0; line-height: 1.4; } .ds-l1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-mut { font-weight: 800; } .ds-safe { font-weight: 400; } .ds-l2 { display: flex; align-items: baseline; gap: 6px; min-width: 0; font-size: 0.6875rem; white-space: nowrap; } .ds-ev { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 600; } .ds-sep { color: var(--label, rgb(255 255 255 / 0.62)); } .ds-badge { display: inline-flex; align-items: center; align-self: center; height: 18px; padding: 0 5px; border: 1px solid currentColor; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; } .ds-code { display: block; } .ds-when { display: grid; justify-items: end; font-size: 0.6875rem; line-height: 1.45; white-space: nowrap; } .ds-row.ds-unseen::after { content: \"\"; position: absolute; inset: 3px; border: 1px solid currentColor; pointer-events: none; } .ds-arriving { animation: ds-arrive 120ms steps(1) both; } @keyframes ds-arrive { 0% { background: var(--ink, #fff); color: var(--ground, #000); } 100% { background: transparent; color: inherit; } } @media (prefers-reduced-motion: reduce) { .ds-arriving { animation: none; } }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Outlined uppercase flags (TRUNCATED, BINARY, a 4xx/5xx response); only ERR is solid.",
+      "html": "<div class=\"ds-badges\"><span class=\"ds-badge\">Truncated</span><span class=\"ds-badge\">Binary</span><span class=\"ds-badge solid\">ERR</span></div>",
+      "css": ".ds-badges { font-family: var(--font, \"Martian Mono Variable\", ui-monospace, monospace); font-variant-numeric: tabular-nums slashed-zero; display: flex; gap: 8px; color: var(--ink, #fff); background: var(--ground, #000); } .ds-badge { display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border: 1px solid currentColor; border-radius: 0; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; } .ds-badge.solid { border-color: var(--ink, #fff); background: var(--ink, #fff); color: var(--ground, #000); }"
+    },
+    {
+      "name": "Signal Aside",
+      "kind": "custom",
+      "refersTo": "barcode-signal",
+      "description": "Hero digest barcode (3px unit, 64px tall), grouped digest, and stacked label-over-value facts with dotted dividers, ruled off from the body.",
+      "html": "<aside class=\"ds-signal\"><svg class=\"ds-hero\" viewBox=\"0 0 44 1\" width=\"132\" height=\"64\" preserveAspectRatio=\"none\" shape-rendering=\"crispEdges\" fill=\"currentColor\" aria-hidden=\"true\"><rect x=\"0\" width=\"3\" height=\"1\"/><rect x=\"4\" width=\"1\" height=\"1\"/><rect x=\"6\" width=\"1\" height=\"1\"/><rect x=\"8\" width=\"1\" height=\"1\"/><rect x=\"10\" width=\"1\" height=\"1\"/><rect x=\"12\" width=\"1\" height=\"1\"/><rect x=\"14\" width=\"1\" height=\"1\"/><rect x=\"16\" width=\"3\" height=\"1\"/><rect x=\"22\" width=\"1\" height=\"1\"/><rect x=\"26\" width=\"1\" height=\"1\"/><rect x=\"29\" width=\"2\" height=\"1\"/><rect x=\"32\" width=\"1\" height=\"1\"/><rect x=\"34\" width=\"1\" height=\"1\"/><rect x=\"36\" width=\"2\" height=\"1\"/><rect x=\"39\" width=\"1\" height=\"1\"/><rect x=\"42\" width=\"1\" height=\"1\"/></svg><code class=\"ds-digest\"><span>83ccf3ca</span><span>2d4ff71c</span><span>00c5e701</span><span>bbfa9a43</span></code><dl class=\"ds-facts\"><div><dt>Stored / original</dt><dd>324 / 324 B</dd></div><div><dt>Encoding</dt><dd>UTF-8 text</dd></div><div><dt>Edge</dt><dd>BR · GIG · AS13335</dd></div><div><dt>IP</dt><dd>127.0.0.1</dd></div></dl></aside>",
+      "css": ".ds-signal { font-family: var(--font, \"Martian Mono Variable\", ui-monospace, monospace); font-variant-numeric: tabular-nums slashed-zero; display: grid; gap: 12px; width: 13.5rem; padding-left: 16px; border-left: 1px solid var(--ink, #fff); background: var(--ground, #000); color: var(--ink, #fff); font-size: 0.8125rem; } .ds-hero { display: block; } .ds-digest { display: grid; grid-template-columns: repeat(2, max-content); column-gap: 1.5ch; font: inherit; font-size: 0.6875rem; letter-spacing: 0.06em; } .ds-facts { display: grid; gap: 8px; margin: 0; } .ds-facts > div { display: grid; gap: 2px; padding-top: 8px; border-top: 1px dotted var(--ink, #fff); } .ds-facts dt { font-size: 0.6875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--label, rgb(255 255 255 / 0.62)); } .ds-facts dd { margin: 0; overflow-wrap: anywhere; }"
+    },
+    {
+      "name": "Header",
+      "kind": "nav",
+      "refersTo": "header",
+      "description": "56px ruled strip: expanded wordmark over the endpoint column, the stepped sine trace, zero-padded counters, the square live lamp, and a full-height Pause.",
+      "html": "<header class=\"ds-header\"><a class=\"ds-mark\" href=\"#\">Limbo</a><div class=\"ds-trace\"><svg viewBox=\"0 0 240 40\" preserveAspectRatio=\"none\" aria-hidden=\"true\"><path class=\"ds-axis\" d=\"M0 20H240\" vector-effect=\"non-scaling-stroke\"/><path class=\"ds-wave\" d=\"M0 20.0L4 14.3L8 9.3L12 5.7L16 4.1L20 4.5L24 7.1L28 11.3L32 16.7L36 22.5L40 28.0L44 32.4L48 35.2L52 36.0L56 34.6L60 31.3L64 26.5L68 20.8L72 15.1L76 9.9L80 6.1L84 4.2L88 4.3L92 6.6L96 10.6L100 15.9L104 21.7L108 27.3L112 31.9L116 34.9L120 36.0L124 34.9L128 31.9L132 27.3L136 21.7L140 15.9L144 10.6L148 6.6L152 4.3L156 4.2L160 6.1L164 9.9L168 15.1L172 20.8L176 26.5L180 31.3L184 34.6L188 36.0L192 35.2L196 32.4L200 28.0L204 22.5L208 16.7L212 11.3L216 7.1L220 4.5L224 4.1L228 5.7L232 9.3L236 14.3L240 20.0\" vector-effect=\"non-scaling-stroke\"/></svg></div><dl class=\"ds-counters\"><div><dt>Endpoints</dt><dd>002</dd></div><div><dt>Captured</dt><dd>013</dd></div></dl><div class=\"ds-state\" role=\"status\"><span class=\"ds-lamp\" data-state=\"live\"></span>Live</div><button class=\"ds-pause\"><svg viewBox=\"0 0 16 16\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"square\" aria-hidden=\"true\"><path d=\"M5.5 3v10 M10.5 3v10\"/></svg>Pause</button></header>",
+      "css": ".ds-header { font-family: var(--font, \"Martian Mono Variable\", ui-monospace, monospace); font-variant-numeric: tabular-nums slashed-zero; display: grid; grid-template-columns: 248px minmax(0, 1fr) auto auto auto; height: 56px; border-bottom: 1px solid var(--ink, #fff); background: var(--ground, #000); color: var(--ink, #fff); font-size: 0.8125rem; } .ds-mark { display: flex; align-items: center; padding: 0 16px; border-right: 1px solid var(--ink, #fff); color: inherit; text-decoration: none; font-size: 1rem; font-weight: 800; font-stretch: 112.5%; letter-spacing: 0.32em; text-transform: uppercase; } .ds-trace { display: flex; align-items: center; min-width: 0; padding: 0 24px; } .ds-trace svg { display: block; width: 100%; height: 40px; } .ds-wave, .ds-axis { fill: none; stroke: var(--ink, #fff); stroke-width: 1px; } .ds-axis { stroke-dasharray: 1 5; } .ds-counters { display: flex; margin: 0; border-left: 1px solid var(--ink, #fff); } .ds-counters > div { display: flex; flex-direction: column; justify-content: center; padding: 0 16px; line-height: 1.3; } .ds-counters > div + div { border-left: 1px dotted var(--ink, #fff); } .ds-counters dt { font-size: 0.6875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--label, rgb(255 255 255 / 0.62)); } .ds-counters dd { margin: 0; font-size: 1rem; font-weight: 700; } .ds-state { display: flex; align-items: center; gap: 8px; min-width: 10.5em; padding: 0 16px; border-left: 1px solid var(--ink, #fff); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; } .ds-lamp { width: 8px; height: 8px; border: 1px solid currentColor; } .ds-lamp[data-state=\"live\"] { background: currentColor; } .ds-lamp[data-state=\"connecting\"] { animation: ds-blink 1s steps(1) infinite; } .ds-lamp[data-state=\"paused\"] { border-width: 0 3px; } @keyframes ds-blink { 50% { background: currentColor; } } .ds-pause { font-family: var(--font, \"Martian Mono Variable\", ui-monospace, monospace); font-variant-numeric: tabular-nums slashed-zero; display: inline-flex; align-items: center; gap: 8px; min-width: 7.5em; padding: 0 12px; border: 0; border-left: 1px solid var(--ink, #fff); background: var(--ground, #000); color: var(--ink, #fff); font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; } .ds-pause:hover, .ds-pause:active { background: var(--ink, #fff); color: var(--ground, #000); } .ds-pause:focus-visible { outline: 2px solid var(--ink, #fff); outline-offset: -4px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Datamatics Field",
+    "overview": "Limbo is a data field, not a dashboard. Each request is drawn as signal: bytes, tabular numbers and a barcode generated from its own SHA-256 digest, all in pure black and white. The idiom is datamatics: information shown as raw monochrome pattern, ruled into a grid and read at tabular density. Hierarchy comes from size, weight, width, uppercase tracking and inversion. It never comes from color.\n\nThe density is close to an instrument panel. Three ruled columns fill the viewport, each with its own scroll, and the 56px header carries the wordmark, a sine trace, counters and the live state. One self-hosted variable monospace sets every role. Width on the `wdth` axis sets the register: condensed for display, slightly condensed for data, expanded for the wordmark. Motion is stepped. A state snaps on, holds, and snaps off.\n\nThe rejected look is the category default: a grey DevTools clone with a blue accent and rainbow method badges. Limbo answers each of those with a different device. A mutating method is heavier, not redder. A selected row is inverted, not tinted. A retry shows up as an identical barcode, not a colored tag.",
+    "keyCharacteristics": [
+      "Two inks, #000 ground and #fff ink, plus one 62% label tier.",
+      "Inversion (a white block with black text) is the only fill emphasis. Outlines and border weight carry the lesser states.",
+      "Captured data stays in full ink and is coded by weight.",
+      "1px solid hairlines frame regions and structural cells, and 1px dotted ones separate repeated items.",
+      "Martian Mono variable is the only typeface, set with tabular numbers and a slashed zero.",
+      "Canvas barcodes are drawn from each body's digest, and one sine trace runs in the header.",
+      "Motion is stepped (`steps(1)`). There are no eased transitions anywhere."
+    ],
+    "rules": [
+      {
+        "name": "The Two Inks Rule",
+        "body": "Ground and ink are the only colors. No hue appears anywhere: not for methods, statuses, errors or success. A 4xx or 5xx response is an outlined badge, and ERR is an inverted one.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Tier Rule",
+        "body": "The 62% tier belongs to labels, syntax and Limbo's own annotations. Captured data is never set at the label tier or in any grey. That covers the method, path, query, header names and values, body, IP and sizes.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mirror Rule",
+        "body": "An inverted block flips everything inside it. Its label tier becomes black at 62%, its focus ring and text selection turn black, its buttons fill with ink behind a ground border, and its barcodes invert. Nothing white is left inside a white block.",
+        "section": "colors"
+      },
+      {
+        "name": "The Weight-Codes-Data Rule",
+        "body": "Inside captured data, weight is the only differentiator. Mutating methods (POST, PUT, PATCH, DELETE) are 800 and safe methods (GET, HEAD, OPTIONS) are 400. JSON keys are 600 and values are 400. Event labels are 600. Non-printable hex bytes drop to 300. Tone never changes.",
+        "section": "typography"
+      },
+      {
+        "name": "The Own-Case Rule",
+        "body": "Captured text is never case-transformed. Paths, event labels, header values and bodies keep the case they were received in. Uppercase belongs to labels, controls and owner-given names.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every numeral is tabular with a slashed zero (`tabular-nums slashed-zero`). Counters are zero-padded to three digits (\"002\", \"013\"), and an unknown count shows as \"---\".",
+        "section": "typography"
+      },
+      {
+        "name": "The Ruled Field Rule",
+        "body": "A 1px solid ink rule draws structure. It frames every region (header, columns, column heads, tab strip, code boxes) and marks the boundaries between structural cells: header cells, tab cells, toggle segments, the facts strip's top edge, the signal aside's edge, and the underline beneath a display title or section head. A 1px dotted ink rule separates repeated items: list rows, menu items, key-value rows, fact and counter sub-cells, and the hex ASCII gutter. Structure is solid and repetition is dotted.",
+        "section": "layout"
+      },
+      {
+        "name": "The No-Nudge Rule",
+        "body": "Text that changes never moves its neighbors. The copy button stacks all its labels in one grid cell. The live-state cell has a floor wide enough for CONNECTING. The time and size column in each row has a fixed 4.75em width.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Field Rule",
+        "body": "Nothing casts a shadow and nothing glows. If an element needs to stand forward, invert it. If it needs a boundary, rule it.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Stepped Motion Rule",
+        "body": "Every animation uses `steps(1)`, and the codebase has no CSS transitions. On arrival, a new row inverts for one 120ms frame (its barcode included), snaps back, and holds a 1px inset outline until it is opened. The connecting lamp blinks at 1s, stepped. The sine trace advances one of 16 discrete phase steps per arrival. Under reduced motion, animations are off and the trace is frozen. Only the unseen outline remains.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do build every surface from ground (#000) and ink (#fff), with the 62% label tier only for labels, syntax and Limbo's own annotations.",
+      "Do mark selection and active state by inversion (white block, black text): selected, active tab, pressed, current, copied, armed, paused, arrival and ERR. Let `.inv` mirror everything inside the block, including the label tier, focus ring, selection, buttons and barcode. Lesser states use outlines and border weight: a dotted inset outline for hover, a 1px inset outline for unseen, a 2px border for invalid and a dotted border for disabled.",
+      "Do tell captured data apart by weight (300, 400, 600, 800) in full ink.",
+      "Do use 1px solid ink for frames and structural cell boundaries, and 1px dotted ink between repeated items. Keep 2px for focus rings and invalid fields.",
+      "Do set every number tabular with a slashed zero, and zero-pad counters to three digits.",
+      "Do keep captured text in its received case. Uppercase only labels, controls and owner-given names.",
+      "Do animate with `steps(1)` only. Under reduced motion keep only the unseen outline.",
+      "Do reserve width for text that changes (stacked labels, min-widths, fixed columns) so nothing nudges.",
+      "Do draw icons as 16px-grid SVG with 1.5px strokes, square caps and miter joins.",
+      "Do clip a barcode that does not fit, and keep its unit width."
+    ],
+    "donts": [
+      "Don't introduce a hue: not for methods, statuses, errors, success or links.",
+      "Don't set captured data (method, path, query, headers, body, IP, sizes) in the label tier or any grey.",
+      "Don't add shadows, gradients, blur or rounded corners.",
+      "Don't use eased transitions or fades. A state snaps on and snaps off.",
+      "Don't add a second typeface. Martian Mono variable carries every role through weight and width.",
+      "Don't draw a region frame dotted, or separate repeated list items with solid rules.",
+      "Don't fall back to the category default: a grey DevTools panel, a blue accent, rainbow method badges."
+    ]
+  }
+}
