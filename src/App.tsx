@@ -323,6 +323,9 @@ export function App() {
   const endpoint = slug && endpoints ? endpoints.find((e) => e.slug === slug) : undefined;
   const captured = endpoints ? endpoints.reduce((n, e) => n + e.requestCount, 0) : null;
   const shown = slug && list?.slug === slug ? list : null;
+  // Below 900px the detail pane hides the list; its back control carries what arrived meanwhile.
+  let unseenHere = 0;
+  for (const s of unseen.values()) if (s === slug) unseenHere++;
 
   let requests;
   if (slug && endpoint && endpoints) {
@@ -376,6 +379,7 @@ export function App() {
         id={requestId}
         tab={tab}
         onTab={setTab}
+        unseenCount={unseenHere}
         onDeleted={(id) => onRequestDeleted(slug, id)}
       />
     );
@@ -384,6 +388,7 @@ export function App() {
       <EndpointPanel
         key={slug}
         endpoint={endpoint}
+        unseenCount={unseenHere}
         onUpdated={(ep) => editEndpoints((eps) => eps.map((e) => (e.slug === ep.slug ? ep : e)))}
         onCleared={() => onCleared(slug)}
         onDeleted={() => onEndpointDeleted(slug)}

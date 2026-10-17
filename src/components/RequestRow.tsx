@@ -32,8 +32,8 @@ export const RequestRow = memo(function RequestRow({ request: r, selected, unsee
             </span>
           )}
           {r.label && <span className={styles.event}>{r.label}</span>}
-          {r.label && <span className={styles.dim}> · </span>}
-          <span className={styles.dim}>{r.ip ?? "no ip"}</span>
+          {r.label && <span className={styles.sep}>·</span>}
+          <span className={styles.ip}>{r.ip ?? "no ip"}</span>
         </span>
       </span>
       <Barcode digest={r.digest} />

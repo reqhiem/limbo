@@ -126,6 +126,12 @@
   border-bottom: var(--rule-fine);
 }
 
+.dangerText {
+  margin-top: 2px;
+  max-width: 60ch;
+  text-wrap: pretty;
+}
+
 .dangerTitle {
   font-weight: 700;
   text-transform: uppercase;

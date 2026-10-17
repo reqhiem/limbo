@@ -48,7 +48,6 @@
 }
 
 .emptyBody {
-  color: var(--label);
   max-width: 48ch;
   text-wrap: pretty;
 }

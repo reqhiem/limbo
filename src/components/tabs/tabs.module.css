@@ -32,7 +32,6 @@
 
 .note {
   margin-bottom: var(--space-3);
-  color: var(--label);
   font-size: var(--text-label);
 }
 

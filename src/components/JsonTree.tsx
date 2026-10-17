@@ -32,10 +32,10 @@ interface NodeProps {
 function Key({ name }: { name: NodeProps["name"] }) {
   if (name === null) return null;
   return (
-    <span className={styles.key}>
-      {typeof name === "number" ? name : JSON.stringify(name)}
-      {": "}
-    </span>
+    <>
+      <span className={styles.key}>{typeof name === "number" ? name : JSON.stringify(name)}</span>
+      <span className={styles.punct}>: </span>
+    </>
   );
 }
 

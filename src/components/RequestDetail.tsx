@@ -7,7 +7,8 @@ import { formatAgo, formatClock, formatDate, formatInt, useNow } from "../lib/fo
 import { hrefFor } from "../lib/router";
 import { ConfirmButton } from "./ConfirmButton";
 import { CopyButton } from "./CopyButton";
-import { IconArrowLeft, IconDownload, IconTrash } from "./icons";
+import { BackToRequests } from "./BackToRequests";
+import { IconDownload, IconTrash } from "./icons";
 import styles from "./RequestDetail.module.css";
 import { Empty, ErrorBlock, Skeleton } from "./States";
 import { BodyTab } from "./tabs/BodyTab";
@@ -34,6 +35,8 @@ interface Props {
   tab: Tab;
   onTab: (tab: Tab) => void;
   onDeleted: (id: string) => void;
+  /** Unseen arrivals on this endpoint; shown on the back control when the list is hidden (narrow). */
+  unseenCount: number;
 }
 
 /** Ticks on its own so the open request (and a 1 MB body) never re-renders for the clock. */
@@ -43,7 +46,7 @@ function Ago({ ms }: { ms: number }) {
 }
 
 /** Keyed by slug/id by the parent: every request starts from a clean load state. */
-export function RequestDetail({ slug, id, tab, onTab, onDeleted }: Props) {
+export function RequestDetail({ slug, id, tab, onTab, onDeleted, unseenCount }: Props) {
   const [load, setLoad] = useState<Load>({ state: "loading" });
   const [attempt, setAttempt] = useState(0);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -61,12 +64,7 @@ export function RequestDetail({ slug, id, tab, onTab, onDeleted }: Props) {
     return () => ac.abort();
   }, [slug, id, attempt]);
 
-  const back = (
-    <a className={`btn small only-narrow ${styles.back}`} href={hrefFor(slug)}>
-      <IconArrowLeft />
-      Requests
-    </a>
-  );
+  const back = <BackToRequests slug={slug} unseen={unseenCount} className={styles.back} />;
 
   if (load.state === "loading") return <Skeleton rows={7} height={44} />;
   if (load.state === "missing") {
@@ -158,13 +156,9 @@ export function RequestDetail({ slug, id, tab, onTab, onDeleted }: Props) {
             <dt className="label">Response</dt>
             <dd>{req.responseStatus}</dd>
           </div>
-          <div className={styles.ip}>
-            <dt className="label">IP</dt>
-            <dd title={req.ip ?? undefined}>{req.ip ?? "none"}</dd>
-          </div>
           <div className={styles.type}>
             <dt className="label">Content type</dt>
-            <dd title={req.contentType ?? undefined}>{req.contentType ?? "none"}</dd>
+            <dd>{req.contentType ?? "none"}</dd>
           </div>
         </dl>
         <div className={styles.actions}>

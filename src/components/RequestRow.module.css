@@ -19,40 +19,54 @@
   line-height: 1.4;
 }
 
-.line1,
-.line2 {
+.line1 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Captured data stays in full ink; safe vs mutating methods differ by weight only. */
 .safe {
-  color: var(--label);
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .mutating {
   font-weight: 800;
 }
 
+/* The label yields; the IP is always shown whole. */
 .line2 {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
   font-size: var(--text-label);
+  white-space: nowrap;
 }
 
 .status {
+  flex: none;
   height: 15px;
-  margin-right: 6px;
   padding: 0 4px;
+  align-self: center;
   font-size: 10px;
   vertical-align: 1px;
 }
 
 .event {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-weight: 600;
 }
 
-.dim {
+.sep {
+  flex: none;
   color: var(--label);
+}
+
+.ip {
+  flex: none;
 }
 
 .when {

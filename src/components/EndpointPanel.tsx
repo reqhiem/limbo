@@ -3,16 +3,18 @@ import type { Endpoint, ResponseConfig } from "../../shared/types";
 import { api, errorMessage } from "../lib/api";
 import { sampleCurl } from "../lib/curl";
 import { formatAgo, formatDate, formatInt, useNow } from "../lib/format";
-import { hrefFor } from "../lib/router";
 import { ConfirmButton } from "./ConfirmButton";
 import { CopyButton } from "./CopyButton";
 import styles from "./EndpointPanel.module.css";
-import { IconArrowLeft, IconTrash } from "./icons";
+import { BackToRequests } from "./BackToRequests";
+import { IconTrash } from "./icons";
 import { ResponseEditor, statusValid, type FieldError } from "./ResponseEditor";
 import { ErrorBlock } from "./States";
 
 interface Props {
   endpoint: Endpoint;
+  /** Unseen requests of this endpoint, shown on the narrow back control. */
+  unseenCount: number;
   onUpdated: (endpoint: Endpoint) => void;
   onCleared: () => void;
   onDeleted: () => void;
@@ -24,7 +26,7 @@ const isBlankRow = ([k, v]: [string, string]) => !k.trim() && !v.trim();
 const normalized = (name: string, r: ResponseConfig) =>
   JSON.stringify([name.trim(), r.status, r.contentType, r.body, r.headers.filter((h) => !isBlankRow(h))]);
 
-export function EndpointPanel({ endpoint, onUpdated, onCleared, onDeleted }: Props) {
+export function EndpointPanel({ endpoint, unseenCount, onUpdated, onCleared, onDeleted }: Props) {
   const now = useNow(15_000);
   const id = useId();
   const url = `${location.origin}/h/${endpoint.slug}`;
@@ -100,10 +102,7 @@ export function EndpointPanel({ endpoint, onUpdated, onCleared, onDeleted }: Pro
   return (
     <section className={styles.panel} aria-labelledby={`${id}-title`}>
       <header className={styles.head}>
-        <a className={`btn small only-narrow ${styles.back}`} href={hrefFor(endpoint.slug)}>
-          <IconArrowLeft />
-          Requests
-        </a>
+        <BackToRequests slug={endpoint.slug} unseen={unseenCount} className={styles.back} />
         <h1 id={`${id}-title`} className={styles.title}>
           {endpoint.name ?? endpoint.slug}
         </h1>
@@ -182,7 +181,7 @@ export function EndpointPanel({ endpoint, onUpdated, onCleared, onDeleted }: Pro
         <div className={styles.dangerRow}>
           <div>
             <p className={styles.dangerTitle}>Clear requests</p>
-            <p className="label">Deletes every captured request. The URL and settings stay.</p>
+            <p className={styles.dangerText}>Deletes every captured request. The URL and settings stay.</p>
           </div>
           <ConfirmButton
             label="Clear requests"
@@ -194,7 +193,7 @@ export function EndpointPanel({ endpoint, onUpdated, onCleared, onDeleted }: Pro
         <div className={styles.dangerRow}>
           <div>
             <p className={styles.dangerTitle}>Delete endpoint</p>
-            <p className="label">Deletes the URL and all its requests. Senders get a 404 from then on.</p>
+            <p className={styles.dangerText}>Deletes the URL and all its requests. Senders get a 404 from then on.</p>
           </div>
           <ConfirmButton
             label="Delete endpoint"

@@ -17,7 +17,7 @@ OWN-WORLD: #000 ground, #fff ink, 1px white hairline rules framing every region;
 
 STORY: Paste the URL into Stripe, fire a test event, a row inverts at the top of the list, open it, read the JSON tree, copy body or cURL. Identical barcodes expose retries at a glance.
 
-FIRST VIEWPORT: 56px header (LIMBO wordmark, sine trace across, live state, counters, pause). Below, three ruled columns: endpoints (~248px; selected endpoint inverted; create form at the foot), requests (~460px; URL + copy, filter, rows METHOD · path · barcode · time/size), detail (request line at display size, equal ruled tab cells, body tree with hex/metadata beside). Endpoint settings take the detail column when no request is open.
+FIRST VIEWPORT: 56px header (LIMBO wordmark, sine trace across, live state, counters, pause). Below, three ruled columns at >=1280px: endpoints (~248px; selected endpoint inverted; create form behind "+ New" in the column head, because a permanent form at the foot cost list height on every screen for a once-per-integration action), requests (~460px; URL + copy, filter, rows METHOD · path · event label · IP · barcode · time/size), detail (request line at display size with its event label, equal ruled tab cells, body tree with the signal aside — hero barcode, digest, bytes, edge metadata — beside). Endpoint settings take the detail column when no request is open. Narrower windows (the side-by-side scene) collapse to two columns (900–1279px) or one route-driven pane (<900px).
 
 FORM: dealt challenger "Ikeda datamatics" (won against the grounded list; the roll's assigned index was 7), seed 4876cac5.
 

@@ -7,12 +7,12 @@ const hex2 = (b: number) => b.toString(16).padStart(2, "0");
 const isPrintable = (b: number) => b >= 0x20 && b < 0x7f;
 
 /** Joins consecutive tokens of the same tone into one span, so the DOM stays small. */
-function toned(tokens: [text: string, dim: boolean][]): ReactNode[] {
+function toned(tokens: [text: string, dim: boolean][], dimClass: string | undefined): ReactNode[] {
   const out: ReactNode[] = [];
   let text = "";
   let dim: boolean | null = null;
   const flush = () => {
-    if (text) out.push(dim ? <span key={out.length} className={styles.dim}>{text}</span> : text);
+    if (text) out.push(dim ? <span key={out.length} className={dimClass}>{text}</span> : text);
   };
   for (const [t, d] of tokens) {
     if (d !== dim) {
@@ -26,7 +26,7 @@ function toned(tokens: [text: string, dim: boolean][]): ReactNode[] {
   return out;
 }
 
-/** offset · 16 bytes hex · ASCII, first `limit` bytes. `00` and non-printables sit at the label tier. */
+/** offset · 16 bytes hex · ASCII, first `limit` bytes. All in ink; null/non-printable bytes are lighter by weight. */
 export function HexView({ bytes, limit = 4096 }: { bytes: Uint8Array; limit?: number }) {
   const shown = bytes.subarray(0, limit);
   const lines = [];
@@ -36,10 +36,10 @@ export function HexView({ bytes, limit = 4096 }: { bytes: Uint8Array; limit?: nu
       <div key={off} className={styles.line}>
         <span className={styles.offset}>{off.toString(16).padStart(8, "0")}</span>
         <span className={styles.bytes}>
-          {toned(chunk.map((b, j) => [`${j === 0 ? "" : j === 8 ? "  " : " "}${hex2(b)}`, b === 0]))}
+          {toned(chunk.map((b, j) => [`${j === 0 ? "" : j === 8 ? "  " : " "}${hex2(b)}`, !isPrintable(b)]), styles.faint)}
         </span>
         <span className={styles.ascii}>
-          {toned(chunk.map((b) => [isPrintable(b) ? String.fromCharCode(b) : ".", !isPrintable(b)]))}
+          {toned(chunk.map((b) => [isPrintable(b) ? String.fromCharCode(b) : ".", !isPrintable(b)]), styles.faint)}
         </span>
       </div>,
     );

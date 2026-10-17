@@ -38,8 +38,11 @@
   outline-offset: 1px;
 }
 
-/* Structure at the label tier, values in full ink. */
-.key,
+/* Data in full ink, coded by weight (keys 600, values 400); only syntax sits at the label tier. */
+.key {
+  font-weight: 600;
+}
+
 .punct,
 .count {
   color: var(--label);

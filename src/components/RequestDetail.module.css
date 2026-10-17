@@ -56,10 +56,10 @@
   overflow-wrap: anywhere;
 }
 
-/* Five facts on one line; the content type yields with an ellipsis. Narrow: 1 + 2 + 2, no orphan. */
+/* Four facts on one line; the content type takes the rest and wraps, never truncated. Narrow: 1 + 2 + 1. */
 .facts {
   display: grid;
-  grid-template-columns: auto auto auto minmax(0, auto) minmax(0, 1fr);
+  grid-template-columns: auto auto auto minmax(0, 1fr);
   border-top: var(--rule);
   border-bottom: var(--rule-fine);
 }
@@ -80,8 +80,11 @@
 .facts dt,
 .facts dd {
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.type dd {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .ago {
@@ -171,7 +174,8 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  .received {
+  .received,
+  .type {
     grid-column: 1 / -1;
   }
 

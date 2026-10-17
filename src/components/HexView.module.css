@@ -10,9 +10,13 @@
   gap: 2ch;
 }
 
-.offset,
-.dim {
+.offset {
   color: var(--label);
+}
+
+/* Printable runs (PNG, IHDR) stand out by weight, never by tone. */
+.faint {
+  font-weight: 300;
 }
 
 .bytes {
