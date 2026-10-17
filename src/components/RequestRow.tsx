@@ -32,7 +32,6 @@ export const RequestRow = memo(function RequestRow({ request: r, selected, unsee
     .filter(Boolean)
     .join(" ");
   const target = `${r.path || "/"}${r.search}`;
-  // Rendered in line 2 at >= 1280px and in the time/size stack below; CSS shows exactly one.
   const ip = r.ip ?? "no ip";
   return (
     <a href={hrefFor(r.slug, r.id)} className={cls} aria-current={selected ? "true" : undefined}>
@@ -47,15 +46,13 @@ export const RequestRow = memo(function RequestRow({ request: r, selected, unsee
             </span>
           )}
           {r.label && <EventLabel label={r.label} />}
-          {r.label && <span className={`${styles.sep} ${styles.wideOnly}`}>·</span>}
-          <span className={`${styles.ip} ${styles.wideOnly}`}>{ip}</span>
         </span>
       </span>
       <Barcode digest={r.digest} />
       <span className={styles.when}>
         <span title={`${formatDate(r.receivedAt)} ${formatClock(r.receivedAt, true)}`}>{formatClock(r.receivedAt)}</span>
         <span>{formatBytes(r.size)}</span>
-        <span className={`${styles.ip} ${styles.narrowOnly}`}>{ip}</span>
+        <span className={styles.ip}>{ip}</span>
       </span>
       {unseen && <span className="visually-hidden">, new</span>}
     </a>
