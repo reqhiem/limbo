@@ -64,14 +64,15 @@ npm run smoke                            # node scripts/smoke.mjs [baseUrl], def
 
 ### Verifying retention and caps locally
 
-Lower the values in `.dev.vars` (they override `wrangler.jsonc` vars locally), restart `npm run dev`, then send requests:
+Use a fresh local state: an existing local Durable Object keeps the alarm it already scheduled (up to an hour away), so lowered values would not show up for a while.
 
 ```sh
-# .dev.vars
-DEV_SKIP_ACCESS=true
-MAX_REQUESTS_PER_ENDPOINT=3     # only the newest 3 requests per endpoint are kept
-RETENTION_DAYS=0.0007           # ~60 s; the retention alarm runs every max(60 s, retention/4)
+npm run build
+npx wrangler dev --local-upstream localhost --persist-to .wrangler/retention-test \
+  --var MAX_REQUESTS_PER_ENDPOINT:3 --var RETENTION_DAYS:0.0007   # ~60 s retention
 ```
+
+Then create an endpoint and send it 5 requests: only the newest 3 remain and `requestCount` is 3. The retention alarm runs every max(60 s, retention / 4). Requests older than the retention window are gone after the second alarm (about 2 minutes), `requestCount` drops to 0, and the next capture re-arms the alarm. Delete `.wrangler/retention-test` afterwards.
 
 ## Configuration
 

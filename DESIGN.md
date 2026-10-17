@@ -218,7 +218,7 @@ The app is locked to the viewport (`100dvh`): a 56px header row above a body row
 
 The detail column is a size container, so its inner layout responds to the column, not the window. The body sits beside a 13.5rem signal aside from 680px for text bodies and from 960px for binary bodies, since a hex dump needs about 520px. The four-fact strip becomes a 1 + 2 + 1 grid under 700px. Panel padding tightens from 24px to 16px under 760px. Tabs stack their counts under the label below 600px.
 
-Spacing follows a 4px scale (4, 8, 12, 16, 24, 32). Column content is inset 16px and detail content 24px. Fixed heights hold the rhythm: controls 32px, small controls 24px, request rows 52px, the endpoint column head 48px, the filter strip 40px, tabs 36px and badges 18px. The endpoint settings panel is capped at 60rem and orientation at 88rem. Both leave 7rem of bottom padding so the last control never sits on the window edge.
+Spacing follows a 4px scale (4, 8, 12, 16, 24, 32). Column content is inset 16px and detail content 24px. Fixed heights hold the rhythm: controls 32px, small controls 24px, request rows at least 52px, the endpoint column head 48px, the filter strip 40px, tabs 36px and badges 18px. The endpoint settings panel is capped at 60rem and orientation at 88rem. Both leave 7rem of bottom padding so the last control never sits on the window edge.
 
 ### Named Rules
 **The Ruled Field Rule.** A 1px solid ink rule draws structure. It frames every region (header, columns, column heads, tab strip, code boxes) and marks the boundaries between structural cells: header cells, tab cells, toggle segments, the facts strip's top edge, the signal aside's edge, and the underline beneath a display title or section head. A 1px dotted ink rule separates repeated items: list rows, menu items, key-value rows, fact and counter sub-cells, and the hex ASCII gutter. Structure is solid and repetition is dotted.
@@ -291,10 +291,10 @@ Badges are outlined flags, not chips.
 - **Links:** Inherit ink and are underlined at a 3px offset, on hover for names or always for inline links.
 
 ### Request Row (signature)
-The 52px row is the arrival surface. It is laid out as main text, a 120px barcode and a 4.75em time and size column, with 12px gaps and 16px side padding.
+The row (at least 52px; it grows when a long IPv6 address wraps) is the arrival surface. It is laid out as main text, a 96px barcode and a 7.5em time / size / IP column, with 12px gaps and 16px side padding.
 - **Line 1:** The method, weight-coded (400 safe, 800 mutating), then the path and query in full ink, ellipsized as a unit.
-- **Line 2 (11px):** An outlined status badge when the response was 400 or above, the event label at 600, a label-tier middle dot, then the IP. The event label gives way to an ellipsis, and the IP is always shown in full.
-- **Right column:** Clock and size, right-aligned and tabular.
+- **Line 2 (11px):** An outlined status badge when the response was 400 or above, then the event label at 600 with the line to itself. The label is split at its last `.`, `:` or `/`: the head ellipsizes and the distinguishing tail (`…payment_failed`) stays whole.
+- **Right column:** Clock, size and IP, right-aligned and tabular. The IP is always shown in full and wraps rather than truncating.
 - **Unseen:** A 1px currentColor outline inset 3px, held until the request is opened. Screen readers hear ", new".
 - **Arrival:** One stepped 120ms inversion of the row and its barcode.
 - **Selected:** Inverted. Hover on unselected rows draws the dotted inset outline.
