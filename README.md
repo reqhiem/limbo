@@ -117,6 +117,14 @@ curl -i https://limbo.reqhiem.dev/                 # 302 to the Access login
 curl -i -X POST https://limbo.reqhiem.dev/h/<slug> -d 'hi'   # your endpoint's configured response
 ```
 
+End-to-end check of a deployment (optional): create an Access **service token**, add a policy with action **Service Auth** that includes it to the "Limbo" app, then
+
+```sh
+CF_ACCESS_CLIENT_ID=<id>.access CF_ACCESS_CLIENT_SECRET=<secret> npm run smoke -- https://limbo.reqhiem.dev
+```
+
+Remove the policy and the token afterwards. The smoke run creates and deletes its own endpoints.
+
 The Worker independently verifies the `Cf-Access-Jwt-Assertion` header (signature against the team's certs, issuer and audience) on every `/api/*` request, so a misconfigured Access policy still cannot expose the API.
 
 ## Behavior notes and limits
@@ -125,6 +133,8 @@ The Worker independently verifies the `Cf-Access-Jwt-Assertion` header (signatur
 - **Ingress responses** always add `Access-Control-Allow-Origin: *` (plus `Allow-Methods/Headers: *` on `OPTIONS`), `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox`, so a configured HTML body can never run script on the UI's origin. Request data is never echoed back.
 - **Headers** are recorded as the Workers runtime exposes them: lowercase names, duplicate headers comma-joined (except `set-cookie`), in runtime order. Query parameters keep their original order and duplicates.
 - **Bodies** are stored as raw bytes; the API returns UTF-8 text when the bytes are valid UTF-8, otherwise base64. Bodies over `MAX_BODY_BYTES` keep the first `MAX_BODY_BYTES` (trimmed to a whole UTF-8 character for text), are flagged `truncated`, and keep the original `size`.
+- **Event label:** each request gets a short label so identical `POST /webhook` rows can be told apart: a provider event header (`x-github-event`, `x-gitlab-event`, `x-event-key`, `x-shopify-topic`, …, plus the body's `action`) or a top-level string `type` / `event` / `event_type` / `topic` / `action` of a JSON body up to 64 KiB.
+- **Response status:** every request records the status Limbo answered with, so testing a provider's retry behavior (e.g. answering 500) is visible per request.
 - **Digest** (and the barcode in the UI) is a SHA-256 prefix of the stored body: identical payloads, such as provider retries, look identical.
 - **Rate limit:** 60 requests per minute per slug (per Cloudflare location); excess gets `429` and is not stored.
 - Captured content is untrusted and rendered only as text in the UI.
