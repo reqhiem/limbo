@@ -1,0 +1,45 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "limbo",
+  "main": "./worker/index.ts",
+  // Newest date supported by the installed workerd (1.20261012.x).
+  "compatibility_date": "2026-10-12",
+
+  // Reachable only through the custom domain (behind Cloudflare Access).
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "limbo.reqhiem.dev", "custom_domain": true }],
+
+  // UI is served as static assets; the Worker only runs for ingress and the API.
+  // No SPA fallback: the UI uses hash routing.
+  "assets": {
+    "run_worker_first": ["/h/*", "/api/*"]
+  },
+
+  "durable_objects": {
+    "bindings": [{ "name": "STORE", "class_name": "LimboStore" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LimboStore"] }],
+
+  "ratelimits": [
+    {
+      "name": "INGRESS_LIMITER",
+      "namespace_id": "4711",
+      "simple": { "limit": 60, "period": 60 }
+    }
+  ],
+
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "https://reqhiem.cloudflareaccess.com",
+    "ACCESS_AUD": "736a03bf1ce3df5d6a53a1a3b3a7d7e568fa76977a84dee361af76caf7acc392",
+    "RETENTION_DAYS": "7",
+    "MAX_REQUESTS_PER_ENDPOINT": "500",
+    "MAX_BODY_BYTES": "1048576"
+  },
+
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true }
+  },
+  "upload_source_maps": true
+}
