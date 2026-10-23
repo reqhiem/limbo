@@ -20,7 +20,7 @@ export class JsonNumber {
   }
 }
 
-function parseJson(text: string): unknown {
+export function parseJson(text: string): unknown {
   return JSON.parse(text, (_key, value: unknown, context?: { source?: string }) =>
     typeof value === "number" && context?.source !== undefined ? new JsonNumber(context.source) : value,
   );

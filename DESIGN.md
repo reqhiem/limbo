@@ -320,7 +320,7 @@ A 56px ruled strip, from left to right:
 - An action row of small buttons, with Delete pushed to the right edge.
 
 ### Data Views
-- **JSON tree:** Keys at 600 and values at 400, both in full ink. Punctuation and collapsed counts ("{ 1 KEY }") are in the label tier. A 12px chevron hangs in a 20px gutter so keys at the same depth align. Each depth indents by 2ch.
+- **JSON tree:** Keys at 600 and values at 400, both in full ink. Punctuation and collapsed counts ("{ 1 KEY }") are in the label tier. A 12px chevron hangs in a 20px gutter so keys at the same depth align. Each depth indents by 2ch. A leaf the tree can read differently carries one small toggle after its value: **Local** on a timestamp under a date-like key, **Parse** on a string holding JSON. It is the same small button as Tree / Raw, pressed means inverted, with its 24px box overhanging the line so row height never changes. An embedded JSON string opens parsed with its toggle pressed; a timestamp stays as received until pressed.
 - **Hex view:** Offsets in the label tier. Bytes and ASCII are in ink, with non-printable bytes at 300. A dotted rule separates the ASCII gutter.
 - **Key-value tables:** Dotted row rules. Captured header names use a 15rem column at 700 in ink. Limbo's metadata keys use an 11rem column in the label type.
 

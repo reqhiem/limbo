@@ -53,3 +53,9 @@
   letter-spacing: var(--track-label);
   text-transform: uppercase;
 }
+
+/* Inline suggestion toggle. Its 24px box overhangs the line instead of stretching it. */
+.lens {
+  margin: -2px 0 -2px var(--space-2);
+  vertical-align: middle;
+}
